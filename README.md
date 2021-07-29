@@ -2,7 +2,7 @@
 Docker-Compose Templates für Simplifier Setup
 
 ## simplifier-standalone.yml
-Single Simplfier Instance with corresponding MySQL and Reverse Proxy Traefik
+Single Simplifier Instance with corresponding MySQL and Reverse Proxy Traefik
 
 ### Installation Manual
 
