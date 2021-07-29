@@ -22,8 +22,8 @@ DB_PASSWORD=MySecret123
 DB_NAME=simplifier
 ```
 
-Important is here a valid dns name - IP Adresses wont work for HOSTNAME because Traefik don't like this.
-If you are not capable to generate a valid dns with certificate, just modify your host file (for e.g. /etc/hosts) and flush your dns cache
+> :warning: Use a valid dns name for the Variable HOSTNAME - IP Adresses won't work for HOSTNAME because Traefik don't like this.
+> If you are not capable to generate a valid dns with certificate, just modify your host file (for e.g. /etc/hosts) and flush your dns cache
 
 3. Create Data Directory for App Sources, Assset Files etc.
 
