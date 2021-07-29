@@ -8,7 +8,7 @@ Single Simplfier Instanz with corresponding MySQL and Reverse Proxy Traefik
 
 1. Clone Repository
 
-git clone https://github.com/simplifier-ag/docker-compose.git
+`git clone https://github.com/simplifier-ag/docker-compose.git`
 
 Prepare Directories for Docker Volumes on your host
 
