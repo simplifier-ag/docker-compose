@@ -60,3 +60,9 @@ https://yourHostname/UserInterface
 
 11. Login with admin/admin
 ... and change your admin password
+
+12. Register on your Community Page
+
+https://community.simplifier.io/
+
+and learn how to use Simpifier in our free online courses!
