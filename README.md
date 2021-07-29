@@ -61,7 +61,7 @@ https://yourHostname/UserInterface
 11. Login with admin/admin
 ... and change your admin password
 
-12. Register on your Community Page
+12. Register on our Community Page
 
 https://community.simplifier.io/
 
