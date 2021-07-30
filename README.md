@@ -57,12 +57,12 @@ https://yourHostname/UserInterface
 
 9. Insert your License Key
 
-10. Download Marketplace Content and Import it
+10. Login with admin/admin
+... and change your admin password
+
+11. Download Marketplace Content and Import it under Menu Transport
 
 [Download here](https://community.simplifier.io/marketplace/standard-content/)
-
-11. Login with admin/admin
-... and change your admin password
 
 12. Register on our [Community Page](https://community.simplifier.io/)
 
