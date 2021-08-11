@@ -44,6 +44,7 @@ services:
       - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
     networks:
       - internal-network
+      - public-network
     depends_on:
       - mysql
   traefik:
