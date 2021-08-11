@@ -1,0 +1,87 @@
+version: '3.5'
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    volumes:
+      - /datadrive/mysql:/var/lib/mysql
+    restart: always
+    command: --max_allowed_packet=1073741824 --wait_timeout=28800
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=simplifier
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    networks:
+      - internal-network
+  simplifier:
+    image: simplifierag/runtime:6.0
+    container_name: simplifier
+    restart: always
+    volumes:
+      - /datadrive/simplifier/data:/opt/simplifier/data
+    environment:
+      - VIRTUAL_HOST=${HOSTNAME}
+      - DB=mysql
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=simplifier
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DB=${DB_NAME}
+      - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.http-secure.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.http-secure.entrypoints=websecure"
+      - "traefik.http.routers.http-secure.tls=true"
+      - "traefik.http.routers.http-secure.middlewares=https_redirect,cors_header"
+      - "traefik.http.middlewares.https_redirect.redirectregex.regex=^https://(.*)(.com|.io|.de|.net|.org|.ch|.at|.ink|.cn|.tk|.uk|.local|.intern|.cloud)/$$"
+      - "traefik.http.middlewares.https_redirect.redirectregex.replacement=http://$${1}$${2}/UserInterface"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=simplifiertoken,content-type,simplifierapp"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworigin=ionic://localhost"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
+    networks:
+      - internal-network
+    depends_on:
+      - mysql
+  traefik:
+    image: traefik:v2.4
+    restart: always
+    container_name: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - /datadrive/traefik/certs/:/certs/
+    environment:
+      - TZ=Europe/Berlin
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=public-network
+      - --providers.file.directory=/certs/
+      - --providers.file.watch=true
+      - --accesslog
+      - --accesslog.fields.names.StartUTC=drop     
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - internal-network
+      - public-network
+  watchtower:
+    image: containrrr/watchtower
+    command: --cleanup --schedule "0 0 0 * * *"
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock      
+networks:
+  internal-network: # everything that is *only* on "internal network" cannot talk to WAN
+    internal: true      
+  public-network: # add this network to a container to make it talk to the rest of the world  
