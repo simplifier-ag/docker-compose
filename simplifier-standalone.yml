@@ -15,7 +15,7 @@ services:
     networks:
       - internal-network
   simplifier:
-    image: simplifierag/runtime:6.0
+    image: simplifierag/runtime:6.5
     container_name: simplifier
     restart: always
     volumes:
