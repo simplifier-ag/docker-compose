@@ -1,0 +1,26 @@
+[[tls.certificates]]
+   certFile = "/configuration/my.custom.hostname.crt"
+   keyFile = "/configuration/my.custom.hostname.key"
+   
+[tls.stores]
+  [tls.stores.default]
+   [tls.stores.default.defaultCertificate]
+     certFile = "/configuration/my.custom.hostname.crt"
+     keyFile = "/configuration/my.custom.hostname.key"
+
+[tls.options]
+  # Valid constants: https://pkg.go.dev/crypto/tls#pkg-constants
+  [tls.options.default]
+    minVersion = "VersionTLS12"
+    cipherSuites = [
+      "TLS_RSA_WITH_AES_128_CBC_SHA",
+      "TLS_RSA_WITH_AES_256_CBC_SHA",
+      "TLS_RSA_WITH_AES_128_CBC_SHA256",
+      "TLS_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_AES_256_GCM_SHA384",
+      "TLS_CHACHA20_POLY1305_SHA256"
+    ]
+  [tls.options.mintls12]
+    minVersion = "VersionTLS12"

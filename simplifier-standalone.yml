@@ -1,10 +1,10 @@
 version: '3.5'
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0
     container_name: mysql
     volumes:
-      - /datadrive/mysql:/var/lib/mysql
+      - /var/lib/simplifier/mysql:/var/lib/mysql
     restart: always
     command: --max_allowed_packet=1073741824 --wait_timeout=28800
     environment:
@@ -15,11 +15,11 @@ services:
     networks:
       - internal-network
   simplifier:
-    image: simplifierag/runtime:6.5
+    image: simplifierag/runtime:${SIMPLIFIER_VERSION}
     container_name: simplifier
     restart: always
     volumes:
-      - /datadrive/simplifier/data:/opt/simplifier/data
+      - /var/lib/simplifier/data:/opt/simplifier/data
     environment:
       - VIRTUAL_HOST=${HOSTNAME}
       - DB=mysql
@@ -37,11 +37,13 @@ services:
       - "traefik.http.routers.http-secure.middlewares=https_redirect,cors_header"
       - "traefik.http.middlewares.https_redirect.redirectregex.regex=^https://(.*)(.com|.io|.de|.net|.org|.ch|.at|.ink|.cn|.tk|.uk|.local|.intern|.cloud)/$$"
       - "traefik.http.middlewares.https_redirect.redirectregex.replacement=http://$${1}$${2}/UserInterface"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=simplifiertoken,content-type,simplifierapp"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworigin=ionic://localhost"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
+      - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
     networks:
       - internal-network
       - public-network
@@ -54,7 +56,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /datadrive/traefik/certs/:/certs/
+      - /etc/simplifier/traefik/:/configuration/
     environment:
       - TZ=Europe/Berlin
     command:
@@ -66,7 +68,7 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
-      - --providers.file.directory=/certs/
+      - --providers.file.directory=/configuration/
       - --providers.file.watch=true
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop     

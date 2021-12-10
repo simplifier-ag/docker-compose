@@ -1,10 +1,23 @@
 # docker-compose
-Docker-Compose Templates für Simplifier Setup
+Docker-Compose templates to run [Simplifier](https://simplifier.io)
 
 ## simplifier-standalone.yml
 Single Simplifier Instance with corresponding MySQL and Reverse Proxy Traefik
 
+##  Quick Setup Guide
+ ```
+mkdir -p /var/lib/simplifier/mysql
+mkdir -p /var/lib/simplifier/data
+mkdir -p /etc/simplifier/traefik
+ ```
+edit .env file 
+copy server certificats to /etc/simplifier/traefik
+copy security.toml to /etc/simplifier/traefik
+edit security.toml to match your needs, at least change name of certificate files
+
 ### Installation Manual
+
+Extended documentation: How to setup Simplifier with default environment: TODO (link to community pages)
 
 1. Clone Repository
 
@@ -27,26 +40,24 @@ DB_NAME=simplifier
 
 3. Create Data Directory for App Sources, Assset Files etc.
 
-`mkdir -p /datadrive/simplifier/data`
+`mkdir -p /var/lib/simplifier/data`
 
 4. Create Data Directory for MySQL Database.
 
-`mkdir -p /datadrive/mysql` 
+`mkdir -p /var/lib/simplifier/mysql` 
 
 5. Create Certificate Volume for TLS Certfificates
 
-`mkdir -p /datadrive/traefik/certs` 
+`mkdir -p /etc/simplifier/traefik` 
 
 6. Optional - Add TLS Certficates (if you haven't any, Traefik will generate default ones)
 
-`nano /datadrive/traefik/certs/certificates.toml`
+copy your certificates to /etc/simplifier/traefik
 
-Copy & Paste
-```
-[[tls.certificates]]
-   certFile = 'certs/simplifier.cloud.crt'
-   keyFile = 'certs/simplifier.cloud.key'
-```
+copy and edit security configuration
+`cp security.toml /etc/simplifier/traefik/`
+`nano /etc/simplifier/traefik/security.toml`
+
 7. Run Simplifier
 
 `docker-compose -f simplifier-standalone.yml up -d`
@@ -58,9 +69,9 @@ https://yourHostname/UserInterface
 9. Insert your License Key
 
 10. Login with admin/admin
-... and change your admin password
+... and change your admin and guest user password
 
-11. Download Marketplace Content and Import it under Menu Transport
+11. Download Marketplace Content and import it (Menu -> Transport)
 
 [Download here](https://community.simplifier.io/marketplace/standard-content/)
 
