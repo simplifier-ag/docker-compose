@@ -61,7 +61,9 @@ copy and edit security configuration
 
 7. Run Simplifier
 
-`docker-compose -f simplifier-standalone.yml up -d`
+`docker-compose -f simplifier-standalone.yml up -d && docker-compose -f simplifier-standalone.yml logs -f`
+
+Press Strg+X if no error occurs in the logs
 
 8. Open Hostname with your Browser
 
