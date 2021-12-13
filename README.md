@@ -27,12 +27,13 @@ Prepare Directories for Docker Volumes on your host
 
 2. Modify Variables in .env File
 
-Adjust Hostname , DB Secret and DB Name
+Adjust Hostname , DB Secret and DB Name and if needed Simplifier Version
 
 ```
 HOSTNAME=example.simplifier.cloud
 DB_PASSWORD=MySecret123
 DB_NAME=simplifier
+SIMPLIFIER_VERSION=6.5 
 ```
 
 > :warning: Use a valid dns name for the Variable HOSTNAME - IP Adresses won't work for HOSTNAME because Traefik don't like this.
