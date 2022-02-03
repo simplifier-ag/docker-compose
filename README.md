@@ -17,7 +17,7 @@ edit security.toml to match your needs, at least change name of certificate file
 
 ### Installation Manual
 
-Extended documentation: How to setup Simplifier with default environment: TODO (link to community pages)
+Extended documentation: How to setup Simplifier with default environment: https://community.simplifier.io/knowledge/29745-2/
 
 1. Clone Repository
 
