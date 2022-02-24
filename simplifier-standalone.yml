@@ -21,7 +21,7 @@ services:
     volumes:
       - /var/lib/simplifier/data:/opt/simplifier/data
     environment:
-      - VIRTUAL_HOST=${HOSTNAME}
+      - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - DB=mysql
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
@@ -31,7 +31,7 @@ services:
       - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.http-secure.rule=Host(`${HOSTNAME}`)"
+      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
       - "traefik.http.routers.http-secure.middlewares=https_redirect,cors_header"
