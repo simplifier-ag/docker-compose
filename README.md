@@ -1,4 +1,4 @@
-# docker-compose
+# Simplifier docker-compose template
 Docker-Compose templates to run [Simplifier](https://simplifier.io)
 
 ## simplifier-standalone.yml
@@ -17,7 +17,7 @@ edit security.toml to match your needs, at least change name of certificate file
 
 ### Installation Manual
 
-Extended documentation: How to setup Simplifier with default environment: https://community.simplifier.io/knowledge/29745-2/
+Extended documentation: How to setup Simplifier with default environment: https://community.simplifier.io/doc/installation-instructions/on-premise/installing-premise-image/
 
 1. Clone Repository
 
