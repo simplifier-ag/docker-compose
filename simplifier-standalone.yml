@@ -12,6 +12,12 @@ services:
       - MYSQL_USER=simplifier
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 2s
+      retries: 0
+      start_period: 5s
     networks:
       - internal-network
   simplifier:
@@ -28,7 +34,7 @@ services:
       - MYSQL_USER=simplifier
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DB=${DB_NAME}
-      - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore 
+      - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
@@ -48,7 +54,8 @@ services:
       - internal-network
       - public-network
     depends_on:
-      - mysql
+        mysql:
+          condition: service_healthy
   traefik:
     image: traefik:v2.4
     restart: always
@@ -71,7 +78,7 @@ services:
       - --providers.file.directory=/configuration/
       - --providers.file.watch=true
       - --accesslog
-      - --accesslog.fields.names.StartUTC=drop     
+      - --accesslog.fields.names.StartUTC=drop
     ports:
       - 80:80
       - 443:443
@@ -83,8 +90,8 @@ services:
     command: --cleanup --schedule "0 0 0 * * *"
     restart: unless-stopped
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock      
+      - /var/run/docker.sock:/var/run/docker.sock
 networks:
   internal-network: # everything that is *only* on "internal network" cannot talk to WAN
-    internal: true      
-  public-network: # add this network to a container to make it talk to the rest of the world  
+    internal: true
+  public-network: # add this network to a container to make it talk to the rest of the world
