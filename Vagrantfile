@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
 
   # config.vm.box_check_update = false
 
-  config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 80, host: 8080
 
   config.vm.network "private_network", ip: "192.168.56.10"
 
@@ -30,8 +30,6 @@ Vagrant.configure("2") do |config|
      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
      apt update
      apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-     mkdir -p /var/lib/simplifier/mysql
-     mkdir -p /var/lib/simplifier/data
-     mkdir -p /etc/simplifier/traefik
+     cd /runtime; docker compose up -d
    SHELL
 end
