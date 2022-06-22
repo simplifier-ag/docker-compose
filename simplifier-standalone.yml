@@ -6,7 +6,7 @@ services:
     volumes:
       - /var/lib/simplifier/mysql:/var/lib/mysql
     restart: always
-    command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=mysql_native_password
+    command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=mysql_native_password --log_bin_trust_function_creators=1
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=simplifier
