@@ -1,6 +1,9 @@
 # Simplifier docker-compose template
 Docker-Compose templates to run [Simplifier](https://simplifier.io)
 
+## Docker Version
+This setup requires docker version 20.10.17
+
 ## simplifier-standalone.yml
 Single Simplifier Instance with corresponding MySQL and Reverse Proxy Traefik
 
@@ -10,14 +13,12 @@ mkdir -p /var/lib/simplifier/mysql
 mkdir -p /var/lib/simplifier/data
 mkdir -p /etc/simplifier/traefik
  ```
-edit .env file 
-copy server certificats to /etc/simplifier/traefik
-copy security.toml to /etc/simplifier/traefik
-edit security.toml to match your needs, at least change name of certificate files
+- edit .env file 
+- copy server certificats to /etc/simplifier/traefik
+- copy security.toml to /etc/simplifier/traefik
+- edit security.toml to match your needs, at least change name of certificate files
 
 ### Installation Manual
-
-Extended documentation: How to setup Simplifier with default environment: https://community.simplifier.io/doc/installation-instructions/on-premise/installing-premise-image/
 
 1. Clone Repository
 
@@ -27,7 +28,7 @@ Prepare Directories for Docker Volumes on your host
 
 2. Modify Variables in .env File
 
-Adjust Hostname , DB Secret and DB Name and if needed Simplifier Version
+Adjust Hostname, DB Secret and DB Name and if needed Simplifier Version
 
 ```
 HOSTNAME=example.simplifier.cloud
@@ -61,7 +62,7 @@ copy and edit security configuration
 
 7. Run Simplifier
 
-`docker-compose -f simplifier-standalone.yml up -d && docker-compose -f simplifier-standalone.yml logs -f`
+`docker compose -f simplifier-standalone.yml up -d && docker compose -f simplifier-standalone.yml logs -f`
 
 Press Strg+X if no error occurs in the logs
 
