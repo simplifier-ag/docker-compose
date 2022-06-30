@@ -81,4 +81,4 @@ https://yourHostname/UserInterface
 
 12. Register on our [Community Page](https://community.simplifier.io/)
 
-and learn how to use Simpifier in our [free online courses](https://community.simplifier.io/courses/)!
+and learn how to use Simplifier in our [free online courses](https://community.simplifier.io/courses/)!
