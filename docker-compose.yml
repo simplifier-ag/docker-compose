@@ -1,122 +1,94 @@
 version: '3.5'
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql
-    volumes:
-      - /var/lib/simplifier/mysql:/var/lib/mysql
-    restart: always
-    command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=mysql_native_password --log_bin_trust_function_creators=1
-    environment:
-      - MYSQL_DATABASE=${DB_NAME}
-      - MYSQL_USER=simplifier
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
-      interval: 5s
-      timeout: 2s
-      retries: 0
-      start_period: 5s
-    networks:
-      - internal-network
-
-  simplifier:
-    image: simplifierag/runtime-prerelease:${SIMPLIFIER_VERSION}
-    container_name: simplifier
+  simplifier-d2wrnew:
+    container_name: ${SIMPLIFIER_HOST}
+    image: simplifierag/runtime-prerelease:7.8
     restart: always
     volumes:
-      - /var/lib/simplifier/data:/opt/simplifier/data
+      - /var/lib/simplifier/data/d2wrnew:/opt/simplifier/data
     environment:
-      - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
       - DB=mysql
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
-      - MYSQL_USER=simplifier
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DB=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+      - MYSQL_DB=d2wrnew
       - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore
-      - SECOND_SEED=launchpad-internal
-      - MODULE_HOST=simplifier-internal
-      - SIMPLIFIER_HOST=simplifier-internal
+      - SECOND_SEED=launchpad-d2wrnew
+      - MODULE_HOST=simplifier-d2wrnew
+      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
-      - "traefik.http.routers.http-secure.entrypoints=websecure"
-      - "traefik.http.routers.http-secure.tls=true"
-      - "traefik.http.routers.http-secure.middlewares=https_redirect,cors_header"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginList=ionic://localhost"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
-      - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
-    networks:
-      internal-network:
-        aliases:
-          - simplifier-internal
-      public-network:
-        aliases:
-          - simplifier
-    depends_on:
-        mysql:
-          condition: service_healthy
+      - "traefik.http.routers.${ROUTER_NAME}.rule=Host(`${VIRTUAL_HOST}`)"
+      - "traefik.http.routers.${ROUTER_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.${ROUTER_NAME}.tls=true"
+      - "traefik.http.routers.${ROUTER_NAME}.middlewares=${ROUTER_NAME}_cors_header"  #https_redirect
 
-  launchpad:
-    image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
-    container_name: 'launchpad'
+        #      - "traefik.http.middlewares.https_redirect.redirectregex.regex=^https://(.*)(.com|.io|.de|.net|.org|.ch|.at|.ink|.cn|.tk|.uk|.local|.intern|.cloud)$$"
+      #      - "traefik.http.middlewares.https_redirect.redirectregex.replacement=https://$${1}$${2}$${3}"
+
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolalloworiginList=ionic://localhost"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolmaxage=1728000"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.addvaryheader=true"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
+    networks:
+      - simplifier-app-network
+
+  launchpad-d2wrnew:
+    container_name: launchpad-d2wrnew
+    image: simplifierag/launchpad-prerelease:snapshot
     restart: always
     environment:
-      SIMPLIFIER_HOST: simplifier-internal
-      SECOND_SEED: launchpad-internal
-      MODULE_HOST: launchpad-internal
+      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
+      - SECOND_SEED=launchpad-d2wrnew
+      - THIRD_SEED=workflow-designtime-d2wrnew
+      - MODULE_HOST=launchpad-d2wrnew
     networks:
-      internal-network:
-        aliases:
-          - launchpad-internal
-    depends_on:
-        mysql:
-          condition: service_healthy
+      - simplifier-app-network
 
-  traefik:
-    image: traefik:latest
+  workflow-designtime-d2wrnew:
+    container_name: workflow-designtime-d2wrnew
+    image: simplifierag/workflow-designtime
+    init: true
     restart: always
-    container_name: traefik
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /etc/simplifier/traefik/:/configuration/
     environment:
-      - TZ=Europe/Berlin
-    command:
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --entrypoints.web.http.redirections.entrypoint.permanent=true
-      - --entrypoints.websecure.address=:443
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=public-network
-      - --providers.file.directory=/configuration/
-      - --providers.file.watch=true
-      - --accesslog
-      - --accesslog.fields.names.StartUTC=drop
-    ports:
-      - 80:80
-      - 443:443
-    networks:
-      - internal-network
-      - public-network
-
-  watchtower:
-    image: containrrr/watchtower
-    command: --cleanup --schedule "0 0 0 * * *"
-    restart: unless-stopped
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_DATABASE=d2wrnew_wdt
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
+      - SECOND_SEED=launchpad-d2wrnew
+      - THIRD_SEED=workflow-designtime-d2wrnew
+      - MODULE_HOST=workflow-designtime-d2wrnew
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/lib/simplifier/data/d2wrnew/workflowDesigntime:/opt/workflowDesigntime"
+    networks:
+      - simplifier-app-network
+
+  workflow-runtime-d2wrnew:
+    container_name: workflow-runtime-d2wrnew
+    image: simplifierag/workflow-runtime-prerelease:snapshot
+    init: true
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_DATABASE=d2wrnew_wrt
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
+      - SECOND_SEED=launchpad-d2wrnew
+      - THIRD_SEED=workflow-designtime-d2wrnew
+      - MODULE_HOST=workflow-runtime-d2wrnew
+    #    volumes:
+    #      - "/var/lib/simplifier/data/d2wrnew/workflowRuntime:/home/workflow-runtime/logback-local.include.xml:ro"
+    networks:
+      - simplifier-app-network
 
 networks:
-  internal-network: # everything that is *only* on "internal network" cannot talk to WAN
-    internal: true
-  public-network: # add this network to a container to make it talk to the rest of the world
+  simplifier-app-network:
+    external: true
