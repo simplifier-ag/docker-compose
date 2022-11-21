@@ -23,14 +23,10 @@ services:
       - "traefik.http.routers.${ROUTER_NAME}.rule=Host(`${VIRTUAL_HOST}`)"
       - "traefik.http.routers.${ROUTER_NAME}.entrypoints=websecure"
       - "traefik.http.routers.${ROUTER_NAME}.tls=true"
-      - "traefik.http.routers.${ROUTER_NAME}.middlewares=${ROUTER_NAME}_cors_header"  #https_redirect
-
-        #      - "traefik.http.middlewares.https_redirect.redirectregex.regex=^https://(.*)(.com|.io|.de|.net|.org|.ch|.at|.ink|.cn|.tk|.uk|.local|.intern|.cloud)$$"
-      #      - "traefik.http.middlewares.https_redirect.redirectregex.replacement=https://$${1}$${2}$${3}"
-
+      - "traefik.http.routers.${ROUTER_NAME}.middlewares=${ROUTER_NAME}_cors_header"
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolalloworiginList=ionic://localhost"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey"
+      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolalloworiginList=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolmaxage=1728000"
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlAllowCredentials=true"
