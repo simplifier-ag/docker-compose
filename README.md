@@ -4,7 +4,7 @@ Docker-Compose templates to run [Simplifier](https://simplifier.io)
 ## Docker Version
 This setup requires docker version 20.10.17
 
-## docker-compose.yml
+## simplifier-standalone.yml
 Single Simplifier Instance with corresponding MySQL and Reverse Proxy Traefik
 
 ##  Quick Setup Guide
@@ -62,7 +62,7 @@ copy and edit security configuration
 
 7. Run Simplifier
 
-`docker compose up -d && docker compose logs -f`
+`docker compose -f simplifier-standalone.yml up -d && docker compose -f simplifier-standalone.yml logs -f`
 
 Press Strg+X if no error occurs in the logs
 
