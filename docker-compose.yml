@@ -41,13 +41,13 @@ services:
       - SIMPLIFIER_HOST=simplifier-internal
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
+      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIatuFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
-      - "traefik.http.routers.http-secure.middlewares=https_redirect,cors_header"
+      - "traefik.http.routers.http-secure.middlewares=cors_header"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginList=ionic://localhost"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginList=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
       - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
