@@ -4,7 +4,7 @@ services:
     image: mysql:8.0
     container_name: mysql
     volumes:
-      - /var/lib/simplifier/mysql:/var/lib/mysql
+      - ${HOST_DATA_PATH}/mysql:/var/lib/mysql
     restart: always
     command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=mysql_native_password --log_bin_trust_function_creators=1
     environment:
@@ -26,7 +26,7 @@ services:
     container_name: simplifier
     restart: always
     volumes:
-      - /var/lib/simplifier/data:/opt/simplifier/data
+      - ${HOST_DATA_PATH}/data:/opt/simplifier/data
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - DB=mysql
@@ -67,6 +67,8 @@ services:
     image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
     container_name: 'launchpad'
     restart: always
+    volumes:
+      - ${HOST_DATA_PATH}/launchpad:/home/launchpad/storage
     environment:
       SIMPLIFIER_HOST: simplifier-internal
       SECOND_SEED: launchpad-internal
@@ -86,7 +88,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - /etc/simplifier/traefik/:/configuration/
+      - ${HOST_DATA_PATH}/traefik/:/configuration/
     environment:
       - TZ=Europe/Berlin
     command:
@@ -111,12 +113,13 @@ services:
 
   watchtower:
     image: containrrr/watchtower
+    container_name: watchtower
     command: --cleanup --schedule "0 0 0 * * *"
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
-  internal-network: # everything that is *only* on "internal network" cannot talk to WAN
+  internal-network: 
     internal: true
-  public-network: # add this network to a container to make it talk to the rest of the world
+  public-network: 
