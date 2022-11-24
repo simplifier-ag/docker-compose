@@ -41,7 +41,7 @@ services:
       - SIMPLIFIER_HOST=simplifier-internal
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIatuFIER_HOSTNAME}`)"
+      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
       - "traefik.http.routers.http-secure.middlewares=cors_header"
