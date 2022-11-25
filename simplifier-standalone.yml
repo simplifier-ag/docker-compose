@@ -45,7 +45,7 @@ services:
       - "traefik.http.middlewares.https_redirect.redirectregex.replacement=https://$${1}$${2}/UserInterface"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworigin=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginlist=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
       - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
