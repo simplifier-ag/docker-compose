@@ -54,6 +54,7 @@ HOST_DATA_PATH=/var/lib/simplifier
 
 `mkdir -p /var/lib/simplifier/data`
 `mkdir -p /var/lib/simplifier/launchpad`
+`chown 1000:1000 /var/lib/simplifier/launchpad`
 
 4. Create Data Directory for MySQL Database.
 
