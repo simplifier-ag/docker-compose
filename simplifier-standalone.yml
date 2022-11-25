@@ -64,7 +64,7 @@ services:
           condition: service_healthy
 
   launchpad:
-    image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
+    image: simplifierag/launchpad-prerelease:${SIMPLIFIER_VERSION}
     container_name: 'launchpad'
     restart: always
     volumes:
