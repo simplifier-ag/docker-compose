@@ -36,9 +36,9 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DB=${DB_NAME}
       - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore
-      - SECOND_SEED=launchpad-internal
-      - MODULE_HOST=simplifier-internal
-      - SIMPLIFIER_HOST=simplifier-internal
+      - SECOND_SEED=launchpad
+      - MODULE_HOST=simplifier
+      - SIMPLIFIER_HOST=simplifier
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
@@ -53,12 +53,8 @@ services:
       - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
       - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
     networks:
-      internal-network:
-        aliases:
-          - simplifier-internal
-      public-network:
-        aliases:
-          - simplifier
+      - internal-network
+      - public-network
     depends_on:
         mysql:
           condition: service_healthy
@@ -70,19 +66,17 @@ services:
     volumes:
       - ${HOST_DATA_PATH}/launchpad:/home/launchpad/storage
     environment:
-      SIMPLIFIER_HOST: simplifier-internal
-      SECOND_SEED: launchpad-internal
-      MODULE_HOST: launchpad-internal
+      SIMPLIFIER_HOST: simplifier
+      SECOND_SEED: launchpad
+      MODULE_HOST: launchpad
     networks:
-      internal-network:
-        aliases:
-          - launchpad-internal
+      public-network
     depends_on:
         mysql:
           condition: service_healthy
 
   traefik:
-    image: traefik:latest
+    image: traefik:v2.9
     restart: always
     container_name: traefik
     volumes:
