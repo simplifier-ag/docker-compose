@@ -70,7 +70,7 @@ services:
       SECOND_SEED: launchpad
       MODULE_HOST: launchpad
     networks:
-      public-network
+      - public-network
     depends_on:
         mysql:
           condition: service_healthy
