@@ -89,7 +89,7 @@ https://yourHostname/UserInterface
 
 11. Download Marketplace Content and import it (Menu -> Transport)
 
-[Download here](https://community.simplifier.io/marketplace/standard-content/)
+[Download here](https://community.simplifier.io/marketplace/standard-content-7-1/)
 
 12. Register on our [Community Page](https://community.simplifier.io/)
 
