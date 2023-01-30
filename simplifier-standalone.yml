@@ -21,6 +21,19 @@ services:
     networks:
       - internal-network
 
+  mysqlinit:
+    build: ./tools/initMysql
+    container_name: mysqlinit
+    volumes:
+      - ./mysql:/config
+    restart: on-failure:255
+    command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASSWORD}", "-endpoint", "mysql:3306" ]
+    depends_on:
+        mysql:
+          condition: service_healthy
+    networks:
+      - internal-network
+
   simplifier:
     image: simplifierag/runtime:${SIMPLIFIER_VERSION}
     container_name: simplifier
@@ -56,6 +69,8 @@ services:
       - internal-network
       - public-network
     depends_on:
+        mysqlinit:
+          condition: service_completed_successfully
         mysql:
           condition: service_healthy
 
@@ -72,6 +87,8 @@ services:
     networks:
       - public-network
     depends_on:
+        mysqlinit:
+          condition: service_completed_successfully
         mysql:
           condition: service_healthy
 
@@ -114,6 +131,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
-  internal-network: 
+  internal-network:
     internal: true
-  public-network: 
+  public-network:
