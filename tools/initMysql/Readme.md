@@ -26,10 +26,4 @@ databases:
 - _-pass_: admin pass for mysql
 - _-endpoint_: mysql endpoint
 
-## docker-compose setup & usage
-
-see sub directory ```sandbox```
-
-(It is most likely that, if you want to test the sandbox docker-compose 
-setup, you need to create a "mysql" dir in there...)
 
