@@ -1,5 +1,19 @@
 version: '3.5'
 services:
+
+  mysqlinit:
+    image: itizzimo/simplifier_mysqlinit:0.1.0
+    container_name: mysqlinit
+    volumes:
+      - ./mysql:/config
+    restart: on-failure:255
+    command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASS}", "-endpoint", "mysql:3306" ]
+#    depends_on:
+#        mysql:
+#          condition: service_healthy
+    networks:
+      - simplifier-app-network
+
   simplifier-d2wrnew:
     container_name: ${SIMPLIFIER_HOST}
     image: simplifierag/runtime-prerelease:7.8
@@ -31,6 +45,9 @@ services:
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlAllowCredentials=true"
       - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
+    depends_on:
+      mysqlinit:
+        condition: service_completed_successfully
     networks:
       - simplifier-app-network
 
@@ -63,6 +80,9 @@ services:
       - MODULE_HOST=workflow-designtime-d2wrnew
     volumes:
       - "/var/lib/simplifier/data/d2wrnew/workflowDesigntime:/opt/workflowDesigntime"
+    depends_on:
+      mysqlinit:
+        condition: service_completed_successfully
     networks:
       - simplifier-app-network
 
@@ -80,6 +100,9 @@ services:
       - SECOND_SEED=launchpad-d2wrnew
       - THIRD_SEED=workflow-designtime-d2wrnew
       - MODULE_HOST=workflow-runtime-d2wrnew
+    depends_on:
+      mysqlinit:
+        condition: service_completed_successfully
     #    volumes:
     #      - "/var/lib/simplifier/data/d2wrnew/workflowRuntime:/home/workflow-runtime/logback-local.include.xml:ro"
     networks:
