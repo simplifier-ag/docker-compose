@@ -2,8 +2,6 @@ database-owner: simplifier
 error-level: onGrant
 databases:
   - simplifier_content
-  - simplifier_powersupply
   - simplifier_keyvalue
-  - simplifier_postcd
-  - simplifier_kun
+  - simplifier_session
   - simplifier_jsonstore
