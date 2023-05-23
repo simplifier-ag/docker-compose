@@ -23,7 +23,6 @@ services:
 
   mysqlinit:
     image: itizzimo/simplifier_mysqlinit:0.1.0
-    build: ./tools/initMysql
     container_name: mysqlinit
     volumes:
       - ./mysql:/config
