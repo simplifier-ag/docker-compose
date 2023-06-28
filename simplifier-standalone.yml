@@ -89,7 +89,6 @@ services:
     environment:
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
-      - THIRD_SEED=workflow-designtime
       - MODULE_HOST=launchpad
     networks:
       - public-network
@@ -115,7 +114,6 @@ services:
       - DB_PORT=3306
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
-      - THIRD_SEED=workflow-runtime
       - MODULE_HOST=workflow-designtime
     networks:
       - public-network
@@ -142,7 +140,6 @@ services:
       - DB_PORT=3306
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
-      - THIRD_SEED=workflow-designtime
       - MODULE_HOST=workflow-runtime
     networks:
       - public-network
