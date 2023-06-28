@@ -5,3 +5,5 @@ databases:
   - simplifier_keyvalue
   - simplifier_session
   - simplifier_jsonstore
+  - simplifier_wf_rt
+  - simplifier_wf_dt

@@ -1,113 +1,198 @@
 version: '3.5'
 services:
 
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    volumes:
+      - ${HOST_DATA_PATH}/mysql:/var/lib/mysql
+    restart: always
+    command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=mysql_native_password --log_bin_trust_function_creators=1
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=simplifier
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 2s
+      retries: 0
+      start_period: 5s
+    networks:
+      - internal-network
+
+
   mysqlinit:
-    image: itizzimo/simplifier_mysqlinit:0.1.0
+    image: simplifierag/mysqlinit:0.2.0
     container_name: mysqlinit
     volumes:
       - ./mysql:/config
     restart: on-failure:255
-    command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASS}", "-endpoint", "mysql:3306" ]
-#    depends_on:
-#        mysql:
-#          condition: service_healthy
+    command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASSWORD}", "-endpoint", "mysql:3306" ]
+    environment:
+      - DB_PREFIX=${DB_NAME}
     networks:
-      - simplifier-app-network
+      - internal-network
+    depends_on:
+        mysql:
+          condition: service_healthy
 
-  simplifier-d2wrnew:
-    container_name: ${SIMPLIFIER_HOST}
-    image: simplifierag/runtime-prerelease:7.8
+
+  simplifier:
+    container_name: simplifier
+    image: simplifierag/simplifier-prerelease:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
-      - /var/lib/simplifier/data/d2wrnew:/opt/simplifier/data
+      - ${HOST_DATA_PATH}/data:/opt/simplifier/data
     environment:
-      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - DB=mysql
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASS}
-      - MYSQL_DB=d2wrnew
+      - MYSQL_USER=simplifier
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DB=${DB_NAME}
       - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore
-      - SECOND_SEED=launchpad-d2wrnew
-      - MODULE_HOST=simplifier-d2wrnew
-      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
+      - SECOND_SEED=launchpad
+      - MODULE_HOST=simplifier
+      - SIMPLIFIER_HOST=simplifier
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${ROUTER_NAME}.rule=Host(`${VIRTUAL_HOST}`)"
-      - "traefik.http.routers.${ROUTER_NAME}.entrypoints=websecure"
-      - "traefik.http.routers.${ROUTER_NAME}.tls=true"
-      - "traefik.http.routers.${ROUTER_NAME}.middlewares=${ROUTER_NAME}_cors_header"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolalloworiginList=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accesscontrolmaxage=1728000"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.addvaryheader=true"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.${ROUTER_NAME}_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
-    depends_on:
-      mysqlinit:
-        condition: service_completed_successfully
+      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
+      - "traefik.http.routers.http-secure.entrypoints=websecure"
+      - "traefik.http.routers.http-secure.tls=true"
+      - "traefik.http.routers.http-secure.middlewares=cors_header"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginlist=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
+      - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
+      - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
+      - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
     networks:
-      - simplifier-app-network
+      - internal-network
+      - public-network
+    depends_on:
+        mysqlinit:
+          condition: service_completed_successfully
+        mysql:
+          condition: service_healthy
 
-  launchpad-d2wrnew:
-    container_name: launchpad-d2wrnew
+
+  launchpad:
+    container_name: launchpad
     image: simplifierag/launchpad-prerelease:snapshot
     restart: always
+    volumes:
+      - ${HOST_DATA_PATH}/launchpad:/home/launchpad/storage
     environment:
-      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
-      - SECOND_SEED=launchpad-d2wrnew
-      - THIRD_SEED=workflow-designtime-d2wrnew
-      - MODULE_HOST=launchpad-d2wrnew
+      - SIMPLIFIER_HOST=simplifier
+      - SECOND_SEED=launchpad
+      - THIRD_SEED=workflow-designtime
+      - MODULE_HOST=launchpad
     networks:
-      - simplifier-app-network
+      - public-network
+    depends_on:
+        mysqlinit:
+          condition: service_completed_successfully
+        mysql:
+          condition: service_healthy
 
-  workflow-designtime-d2wrnew:
-    container_name: workflow-designtime-d2wrnew
-    image: simplifierag/workflow-designtime
+
+  workflow-designtime:
+    container_name: workflow-designtime
+    image: simplifierag/workflow-designtime-prerelease:snapshot
     init: true
     restart: always
+    volumes:
+      - ${HOST_DATA_PATH}/workflowDesigntime:/opt/workflowDesigntime
     environment:
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_DATABASE=d2wrnew_wdt
+      - DB_USER=simplifier
+      - DB_PASS=${DB_PASSWORD}
+      - DB_DATABASE=simplifier_wf_dt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
-      - SECOND_SEED=launchpad-d2wrnew
-      - THIRD_SEED=workflow-designtime-d2wrnew
-      - MODULE_HOST=workflow-designtime-d2wrnew
-    volumes:
-      - "/var/lib/simplifier/data/d2wrnew/workflowDesigntime:/opt/workflowDesigntime"
-    depends_on:
-      mysqlinit:
-        condition: service_completed_successfully
+      - SIMPLIFIER_HOST=simplifier
+      - SECOND_SEED=launchpad
+      - THIRD_SEED=workflow-runtime
+      - MODULE_HOST=workflow-designtime
     networks:
-      - simplifier-app-network
+      - public-network
+      - internal-network
+    depends_on:
+        mysqlinit:
+          condition: service_completed_successfully
+        mysql:
+          condition: service_healthy
 
-  workflow-runtime-d2wrnew:
-    container_name: workflow-runtime-d2wrnew
+
+  workflow-runtime:
+    container_name: workflow-runtime
     image: simplifierag/workflow-runtime-prerelease:snapshot
     init: true
+    restart: always
+    volumes:
+      - ${HOST_DATA_PATH}/workflowRuntime:/home/workflow-runtime/data
     environment:
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_DATABASE=d2wrnew_wrt
+      - DB_USER=simplifier
+      - DB_PASS=${DB_PASSWORD}
+      - DB_DATABASE=simplifier_wf_rt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST=${SIMPLIFIER_HOST}
-      - SECOND_SEED=launchpad-d2wrnew
-      - THIRD_SEED=workflow-designtime-d2wrnew
-      - MODULE_HOST=workflow-runtime-d2wrnew
-    depends_on:
-      mysqlinit:
-        condition: service_completed_successfully
-    #    volumes:
-    #      - "/var/lib/simplifier/data/d2wrnew/workflowRuntime:/home/workflow-runtime/logback-local.include.xml:ro"
+      - SIMPLIFIER_HOST=simplifier
+      - SECOND_SEED=launchpad
+      - THIRD_SEED=workflow-designtime
+      - MODULE_HOST=workflow-runtime
     networks:
-      - simplifier-app-network
+      - public-network
+      - internal-network
+    depends_on:
+        mysqlinit:
+          condition: service_completed_successfully
+        mysql:
+          condition: service_healthy
+
+
+  traefik:
+    image: traefik:v2.9
+    restart: always
+    container_name: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - ${HOST_DATA_PATH}/traefik/:/configuration/
+    environment:
+      - TZ=Europe/Berlin
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=public-network
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
+      - --accesslog
+      - --accesslog.fields.names.StartUTC=drop
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - internal-network
+      - public-network
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    command: --cleanup --schedule "0 0 0 * * *"
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
-  simplifier-app-network:
-    external: true
+  internal-network:
+    internal: true
+  public-network:
