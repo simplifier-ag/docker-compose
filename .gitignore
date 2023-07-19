@@ -3,3 +3,4 @@
 .vagrant
 stuff
 .env
+security.toml
