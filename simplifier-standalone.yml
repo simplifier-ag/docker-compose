@@ -53,7 +53,8 @@ services:
       - MYSQL_USER=simplifier
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DB=${DB_NAME}
-      - PLUGINLIST=keyValueStorePlugin,pdfPlugin,captcha,contentRepoPlugin,jsonStore
+      - PLUGINLIST=${PLUGINLIST}
+      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
       - SECOND_SEED=launchpad
       - MODULE_HOST=simplifier
       - SIMPLIFIER_HOST=simplifier
@@ -90,6 +91,7 @@ services:
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
       - MODULE_HOST=launchpad
+      - JVM_ARGS==-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
     networks:
       - public-network
     depends_on:
@@ -115,6 +117,7 @@ services:
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
       - MODULE_HOST=workflow-designtime
+      - JVM_ARGS=-Xmx${WF_DT_JVM_HEAP_GB}g
     networks:
       - public-network
       - internal-network
@@ -141,6 +144,12 @@ services:
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
       - MODULE_HOST=workflow-runtime
+      - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
+      - TZ=${TZ}
+      - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
+      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL}
+      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED}
+      - ARCHIVE_TIME=${WF_ARCHIVE_TIME}
     networks:
       - public-network
       - internal-network
