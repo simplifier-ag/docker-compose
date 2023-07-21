@@ -107,7 +107,7 @@ services:
     init: true
     restart: always
     volumes:
-      - ${HOST_DATA_PATH}/workflowDesigntime:/opt/workflowDesigntime
+      - ${HOST_DATA_PATH}/workflowDesigntime:/home/workflowDesigntime/data
     environment:
       - DB_USER=simplifier
       - DB_PASS=${DB_PASSWORD}
