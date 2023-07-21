@@ -41,7 +41,7 @@ services:
 
   simplifier:
     container_name: simplifier
-    image: simplifierag/simplifier-prerelease:${SIMPLIFIER_VERSION}
+    image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/data:/opt/simplifier/data
@@ -83,7 +83,7 @@ services:
 
   launchpad:
     container_name: launchpad
-    image: simplifierag/launchpad-prerelease:snapshot
+    image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/launchpad:/home/launchpad/storage
@@ -91,7 +91,7 @@ services:
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
       - MODULE_HOST=launchpad
-      - JVM_ARGS==-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
+      - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
     networks:
       - public-network
     depends_on:
@@ -103,7 +103,7 @@ services:
 
   workflow-designtime:
     container_name: workflow-designtime
-    image: simplifierag/workflow-designtime-prerelease:snapshot
+    image: simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
     init: true
     restart: always
     volumes:
@@ -130,7 +130,7 @@ services:
 
   workflow-runtime:
     container_name: workflow-runtime
-    image: simplifierag/workflow-runtime-prerelease:snapshot
+    image: simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
     init: true
     restart: always
     volumes:
