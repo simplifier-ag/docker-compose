@@ -84,7 +84,7 @@ services:
     image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
-      - ${HOST_DATA_PATH}/launchpad:/home/launchpad/storage
+      - ${HOST_DATA_PATH}/launchpad:/home/launchpad/data
     environment:
       - SIMPLIFIER_HOST=simplifier
       - SECOND_SEED=launchpad
