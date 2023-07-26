@@ -9,9 +9,6 @@ services:
     restart: always
     command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=mysql_native_password --log_bin_trust_function_creators=1
     environment:
-      - MYSQL_DATABASE=${DB_NAME}
-      - MYSQL_USER=simplifier
-      - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
@@ -24,7 +21,7 @@ services:
 
 
   mysqlinit:
-    image: simplifierag/mysqlinit:0.2.0
+    image: simplifierag/mysqlinit:1.0.0
     container_name: mysqlinit
     volumes:
       - ./mysql:/config
@@ -32,6 +29,7 @@ services:
     command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASSWORD}", "-endpoint", "mysql:3306" ]
     environment:
       - DB_PREFIX=${DB_NAME}
+      - DB_PASSWORD=${DB_PASSWORD}
     networks:
       - internal-network
     depends_on:
