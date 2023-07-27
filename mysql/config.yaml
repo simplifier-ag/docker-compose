@@ -1,9 +1,13 @@
-database-owner: simplifier
+database-owner:
+  login: simplifier
+  password: ${DB_PASSWORD}
+  host: "%"
 error-level: onGrant
 databases:
-  - simplifier_content
-  - simplifier_keyvalue
-  - simplifier_session
-  - simplifier_jsonstore
-  - simplifier_wf_rt
-  - simplifier_wf_dt
+  - ${DB_PREFIX}
+  - ${DB_PREFIX}_content
+  - ${DB_PREFIX}_keyvalue
+  - ${DB_PREFIX}_session
+  - ${DB_PREFIX}_jsonstore
+  - ${DB_PREFIX}_wf_rt
+  - ${DB_PREFIX}_wf_dt
