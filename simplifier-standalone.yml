@@ -92,6 +92,7 @@ services:
       - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
     networks:
       - public-network
+      - internal-network
     depends_on:
         mysqlinit:
           condition: service_completed_successfully
