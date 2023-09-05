@@ -38,7 +38,7 @@ services:
 
 
   simplifier:
-    container_name: simplifier
+    container_name: ${INSTANCE_PREFIX}-simplifier
     image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
@@ -53,9 +53,9 @@ services:
       - MYSQL_DB=${DB_NAME}
       - PLUGINLIST=${PLUGINLIST}
       - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
-      - SECOND_SEED=launchpad
-      - MODULE_HOST=simplifier
-      - SIMPLIFIER_HOST=simplifier
+      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
+      - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
+      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
@@ -80,15 +80,15 @@ services:
 
 
   launchpad:
-    container_name: launchpad
+    container_name: ${INSTANCE_PREFIX}-launchpad
     image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/launchpad:/home/launchpad/data
     environment:
-      - SIMPLIFIER_HOST=simplifier
-      - SECOND_SEED=launchpad
-      - MODULE_HOST=launchpad
+      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
+      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
+      - MODULE_HOST=${INSTANCE_PREFIX}-launchpad
       - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
     networks:
       - public-network
@@ -101,7 +101,7 @@ services:
 
 
   workflow-designtime:
-    container_name: workflow-designtime
+    container_name: ${INSTANCE_PREFIX}-workflow-designtime
     image: simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
     init: true
     restart: always
@@ -113,9 +113,9 @@ services:
       - DB_DATABASE=simplifier_wf_dt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST=simplifier
-      - SECOND_SEED=launchpad
-      - MODULE_HOST=workflow-designtime
+      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}simplifier
+      - SECOND_SEED=${INSTANCE_PREFIX}launchpad
+      - MODULE_HOST=${INSTANCE_PREFIX}workflow-designtime
       - JVM_ARGS=-Xmx${WF_DT_JVM_HEAP_GB}g
       - TZ=${TZ}
     networks:
@@ -129,7 +129,7 @@ services:
 
 
   workflow-runtime:
-    container_name: workflow-runtime
+    container_name: ${INSTANCE_PREFIX}-workflow-runtime
     image: simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
     init: true
     restart: always
@@ -141,9 +141,9 @@ services:
       - DB_DATABASE=simplifier_wf_rt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST=simplifier
-      - SECOND_SEED=launchpad
-      - MODULE_HOST=workflow-runtime
+      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
+      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
+      - MODULE_HOST=${INSTANCE_PREFIX}-workflow-runtime
       - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
       - TZ=${TZ}
       - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
@@ -185,8 +185,8 @@ services:
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
     ports:
-      - 80:80
-      - 443:443
+      - ${PUBLIC_PORT_HTTP}:80
+      - ${PUBLIC_PORT_HTTPS}:443
     networks:
       - internal-network
       - public-network
