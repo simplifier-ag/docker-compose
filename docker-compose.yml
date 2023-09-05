@@ -42,7 +42,7 @@ services:
     image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
-      - ${HOST_DATA_PATH}/data:/opt/simplifier/data
+      - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - DB=mysql
