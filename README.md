@@ -1,3 +1,7 @@
+# Simplifier 8 EHP 1 Prerelease
+Work in progress
+
+
 # Simplifier docker-compose template
 Docker-Compose templates to run [Simplifier](https://simplifier.io)
 
