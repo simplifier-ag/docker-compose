@@ -69,6 +69,12 @@ services:
       - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
       - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
+    healthcheck:
+      test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
+      interval: 15s
+      retries: 20
+      start_period: 120s
+      timeout: 30s
     networks:
       - internal-network
       - public-network
@@ -98,6 +104,8 @@ services:
           condition: service_completed_successfully
         mysql:
           condition: service_healthy
+        simplifier:
+          condition: service_healthy
 
 
   workflow-designtime:
@@ -113,9 +121,9 @@ services:
       - DB_DATABASE=simplifier_wf_dt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}simplifier
-      - SECOND_SEED=${INSTANCE_PREFIX}launchpad
-      - MODULE_HOST=${INSTANCE_PREFIX}workflow-designtime
+      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
+      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
+      - MODULE_HOST=${INSTANCE_PREFIX}-workflow-designtime
       - JVM_ARGS=-Xmx${WF_DT_JVM_HEAP_GB}g
       - TZ=${TZ}
     networks:
@@ -125,6 +133,8 @@ services:
         mysqlinit:
           condition: service_completed_successfully
         mysql:
+          condition: service_healthy
+        simplifier:
           condition: service_healthy
 
 
@@ -158,6 +168,8 @@ services:
         mysqlinit:
           condition: service_completed_successfully
         mysql:
+          condition: service_healthy
+        simplifier:
           condition: service_healthy
 
 
