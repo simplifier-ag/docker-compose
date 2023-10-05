@@ -118,7 +118,7 @@ services:
     environment:
       - DB_USER=simplifier
       - DB_PASS=${DB_PASSWORD}
-      - DB_DATABASE=simplifier_wf_dt
+      - DB_DATABASE=${DB_NAME}_wf_dt
       - DB_HOST=mysql
       - DB_PORT=3306
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
@@ -148,7 +148,7 @@ services:
     environment:
       - DB_USER=simplifier
       - DB_PASS=${DB_PASSWORD}
-      - DB_DATABASE=simplifier_wf_rt
+      - DB_DATABASE=${DB_NAME}_wf_rt
       - DB_HOST=mysql
       - DB_PORT=3306
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
