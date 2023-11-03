@@ -51,6 +51,12 @@ services:
       - MYSQL_USER=simplifier
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DB=${DB_NAME}
+      - MONITORING_DBMS=mysql
+      - MONITORING_DB_HOST=mysql
+      - MONITORING_DB_PORT=3306
+      - MONITORING_DB_USER=simplifier
+      - MONITORING_DB_PASS=${DB_PASSWORD}
+      - MONITORING_DB=${DB_NAME}_monitoring
       - PLUGINLIST=${PLUGINLIST}
       - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
