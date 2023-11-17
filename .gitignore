@@ -1,4 +1,5 @@
 .idea
+simplifier-docker-compose.iml
 *~
 .vagrant
 stuff
