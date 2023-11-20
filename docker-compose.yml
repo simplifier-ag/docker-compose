@@ -39,7 +39,7 @@ services:
 
   simplifier:
     container_name: ${INSTANCE_PREFIX}-simplifier
-    image: simplifierag/simplifier-prerelease:snapshot # simplifierag/simplifier:${SIMPLIFIER_VERSION}
+    image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
@@ -87,7 +87,7 @@ services:
 
   launchpad:
     container_name: ${INSTANCE_PREFIX}-launchpad
-    image: simplifierag/launchpad-prerelease:snapshot # simplifierag/launchpad:${SIMPLIFIER_VERSION}
+    image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/launchpad:/home/launchpad/data
@@ -110,7 +110,7 @@ services:
 
   workflow-designtime:
     container_name: ${INSTANCE_PREFIX}-workflow-designtime
-    image: simplifierag/workflow-designtime-prerelease:snapshot # simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
+    image: simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
     init: true
     restart: always
     volumes:
@@ -140,7 +140,7 @@ services:
 
   workflow-runtime:
     container_name: ${INSTANCE_PREFIX}-workflow-runtime
-    image: simplifierag/workflow-runtime-prerelease:snapshot # simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
+    image: simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
     init: true
     restart: always
     volumes:
