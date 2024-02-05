@@ -68,7 +68,7 @@ services:
       - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
       - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
+      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime,OData-Version"
     networks:
       - internal-network
       - public-network
