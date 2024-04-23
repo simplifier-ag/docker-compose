@@ -11,3 +11,4 @@ databases:
   - ${DB_PREFIX}_jsonstore
   - ${DB_PREFIX}_wf_rt
   - ${DB_PREFIX}_wf_dt
+  - ${DB_PREFIX}_monitoring

@@ -1,10 +1,8 @@
-# Simplifier 8 EHP 1 Prerelease
-Work in progress
+# Simplifier 8 EHP 2 
 
-## Changelog - relevant for installation documentation:
-* renamed compose file to docker-compose.yml -> no need to give file name anymore
-* renamed host data folder for simplifier from data to simplifier
-    * to match folder names with service names
+## Changelog:
+* enabled separate DB for monitoring (new feature in EHP 2)
+* changed MySQL binlog retention to 7 days
 
 ---
 

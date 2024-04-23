@@ -7,7 +7,7 @@ services:
     volumes:
       - ${HOST_DATA_PATH}/mysql:/var/lib/mysql
     restart: always
-    command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=caching_sha2_password --log_bin_trust_function_creators=1
+    command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=caching_sha2_password --log_bin_trust_function_creators=1 --expire-logs-days=7
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
     healthcheck:
@@ -45,12 +45,21 @@ services:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
+
       - DB=mysql
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
       - MYSQL_USER=simplifier
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DB=${DB_NAME}
+
+      - MONITORING_DBMS=mysql
+      - MONITORING_DB_HOST=mysql
+      - MONITORING_DB_PORT=3306
+      - MONITORING_DB_USER=simplifier
+      - MONITORING_DB_PASS=${DB_PASSWORD}
+      - MONITORING_DB=${DB_NAME}_monitoring
+
       - PLUGINLIST=${PLUGINLIST}
       - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
