@@ -3,6 +3,7 @@
 ## Changelog:
 * enabled separate DB for monitoring (new feature in EHP 2)
 * changed MySQL binlog retention to 7 days
+* changed traefik to 2.11.2
 
 ---
 
