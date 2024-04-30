@@ -39,7 +39,7 @@ services:
 
   simplifier:
     container_name: ${INSTANCE_PREFIX}-simplifier
-    image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
+    image: simplifierag/simplifier-prerelease:8.2-sbo-debugging
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
@@ -59,6 +59,9 @@ services:
       - MONITORING_DB_USER=simplifier
       - MONITORING_DB_PASS=${DB_PASSWORD}
       - MONITORING_DB=${DB_NAME}_monitoring
+      - DEBUG_CHROME_DEV_TOOLS_HOST=${SIMPLIFIER_HOSTNAME}
+      - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - FEATURE_SSBO_JS_DEBUGGING=true
 
       - PLUGINLIST=${PLUGINLIST}
       - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
@@ -197,6 +200,7 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.web.forwardedHeaders.insecure=true
       - --entrypoints.websecure.address=:443
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
@@ -205,7 +209,11 @@ services:
       - --providers.file.watch=true
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
+      - --serversTransport.insecureSkipVerify=true
+    expose:
+      - ${DEBUG_CHROME_DEV_TOOLS_PORT}
     ports:
+      - ${DEBUG_CHROME_DEV_TOOLS_PORT}:${DEBUG_CHROME_DEV_TOOLS_PORT}
       - ${PUBLIC_PORT_HTTP}:80
       - ${PUBLIC_PORT_HTTPS}:443
     networks:
