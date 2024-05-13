@@ -39,7 +39,7 @@ services:
 
   simplifier:
     container_name: ${INSTANCE_PREFIX}-simplifier
-    image: simplifierag/simplifier-prerelease:8.2-sbo-debugging
+    image: simplifierag/simplifier-prerelease:8.2-sbo-debugging.8
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
@@ -59,7 +59,7 @@ services:
       - MONITORING_DB_USER=simplifier
       - MONITORING_DB_PASS=${DB_PASSWORD}
       - MONITORING_DB=${DB_NAME}_monitoring
-      - DEBUG_CHROME_DEV_TOOLS_HOST=${SIMPLIFIER_HOSTNAME}
+      - DEBUG_CHROME_DEV_TOOLS_HOST=${DEBUG_CHROME_DEV_TOOLS_HOST}
       - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_PORT}
       - FEATURE_SSBO_JS_DEBUGGING=true
 
@@ -210,8 +210,6 @@ services:
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
       - --serversTransport.insecureSkipVerify=true
-    expose:
-      - ${DEBUG_CHROME_DEV_TOOLS_PORT}
     ports:
       - ${DEBUG_CHROME_DEV_TOOLS_PORT}:${DEBUG_CHROME_DEV_TOOLS_PORT}
       - ${PUBLIC_PORT_HTTP}:80
