@@ -70,10 +70,22 @@ services:
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
     labels:
       - "traefik.enable=true"
+
+      # First Router
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
       - "traefik.http.routers.http-secure.middlewares=cors_header"
+
+      # Second Router
+      - "traefik.http.routers.ws-debugging.rule=Host(`${DEBUG_CHROME_DEV_TOOLS_HOST}:${DEBUG_CHROME_DEV_TOOLS_PORT}/debug`)"
+      - "traefik.http.routers.ws-debugging.entrypoints=debugging"
+      - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
+
+      # Services
+
+      # Middlewares
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey,OData-MaxVersion,OData-Version,MIME-Version,X-CSRF-Token"
       - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginlist=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
@@ -202,6 +214,8 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --entrypoints.web.forwardedHeaders.insecure=true
       - --entrypoints.websecure.address=:443
+      - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - --api.insecure=true
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
