@@ -78,12 +78,14 @@ services:
       - "traefik.http.routers.http-secure.middlewares=cors_header"
 
       # Second Router
-      - "traefik.http.routers.ws-debugging.rule=Host(`${DEBUG_CHROME_DEV_TOOLS_HOST}:${DEBUG_CHROME_DEV_TOOLS_PORT}/debug`)"
-      - "traefik.http.routers.ws-debugging.entrypoints=debugging"
       - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
+      - "traefik.tcp.routers.ws-debugging.tls=false"
+      - "traefik.tcp.routers.ws-debugging.service=ws-debugging"
 
       # Services
+      # This is required in order to let Chrome Dev-Tools connect to Simplifier
+      - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_PORT}"
 
       # Middlewares
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
@@ -212,10 +214,8 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
-      - --entrypoints.web.forwardedHeaders.insecure=true
       - --entrypoints.websecure.address=:443
       - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_PORT}
-      - --api.insecure=true
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
@@ -223,7 +223,6 @@ services:
       - --providers.file.watch=true
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
-      - --serversTransport.insecureSkipVerify=true
     ports:
       - ${DEBUG_CHROME_DEV_TOOLS_PORT}:${DEBUG_CHROME_DEV_TOOLS_PORT}
       - ${PUBLIC_PORT_HTTP}:80
