@@ -39,7 +39,7 @@ services:
 
   simplifier:
     container_name: ${INSTANCE_PREFIX}-simplifier
-    image: simplifierag/simplifier-prerelease:8.2-sbo-debugging.8
+    image: simplifierag/simplifier-prerelease:8.2-sbo-debugging.21
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
@@ -59,8 +59,15 @@ services:
       - MONITORING_DB_USER=simplifier
       - MONITORING_DB_PASS=${DB_PASSWORD}
       - MONITORING_DB=${DB_NAME}_monitoring
-      - DEBUG_CHROME_DEV_TOOLS_HOST=${DEBUG_CHROME_DEV_TOOLS_HOST}
-      - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST}
+      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+      - DEBUG_CHROME_DEV_TOOLS_USE_TLS=${DEBUG_CHROME_DEV_TOOLS_USE_TLS}
+      - DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PATH=${DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PATH}
+      - DEBUG_CHROME_DEV_TOOLS_KEYSTORE_TYPE=${DEBUG_CHROME_DEV_TOOLS_KEYSTORE_TYPE}
+      #This should be uncommented when the keys are used for the keystore
+      #- DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PASSWORD=${DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PASSWORD}
+      #- DEBUG_CHROME_DEV_TOOLS_KEY_PASSWORD=${DEBUG_CHROME_DEV_TOOLS_KEY_PASSWORD}
+
       - FEATURE_SSBO_JS_DEBUGGING=true
 
       - PLUGINLIST=${PLUGINLIST}
@@ -80,12 +87,12 @@ services:
       # Second Router
       - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
-      - "traefik.tcp.routers.ws-debugging.tls=false"
+      - "traefik.tcp.routers.ws-debugging.tls=${DEBUG_CHROME_DEV_TOOLS_USE_TLS}"
       - "traefik.tcp.routers.ws-debugging.service=ws-debugging"
 
       # Services
       # This is required in order to let Chrome Dev-Tools connect to Simplifier
-      - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_PORT}"
+      - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
 
       # Middlewares
       - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
@@ -215,7 +222,9 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --entrypoints.websecure.address=:443
-      - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+      - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
+      - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
@@ -224,7 +233,7 @@ services:
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
     ports:
-      - ${DEBUG_CHROME_DEV_TOOLS_PORT}:${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:${DEBUG_CHROME_DEV_TOOLS_PORT}
       - ${PUBLIC_PORT_HTTP}:80
       - ${PUBLIC_PORT_HTTPS}:443
     networks:
