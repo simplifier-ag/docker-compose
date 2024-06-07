@@ -39,7 +39,8 @@ services:
 
   simplifier:
     container_name: ${INSTANCE_PREFIX}-simplifier
-    image: simplifierag/simplifier-prerelease:8.2-sbo-debugging.21
+    #SSBO Debugging is only available from version 8.2
+    image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
@@ -61,12 +62,8 @@ services:
       - MONITORING_DB=${DB_NAME}_monitoring
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST}
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_USE_TLS=${DEBUG_CHROME_DEV_TOOLS_USE_TLS}
-      - DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PATH=${DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PATH}
-      - DEBUG_CHROME_DEV_TOOLS_KEYSTORE_TYPE=${DEBUG_CHROME_DEV_TOOLS_KEYSTORE_TYPE}
-      #This should be uncommented when the keys are used for the keystore
-      #- DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PASSWORD=${DEBUG_CHROME_DEV_TOOLS_KEYSTORE_PASSWORD}
-      #- DEBUG_CHROME_DEV_TOOLS_KEY_PASSWORD=${DEBUG_CHROME_DEV_TOOLS_KEY_PASSWORD}
+      - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=${DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS}
 
       - FEATURE_SSBO_JS_DEBUGGING=true
 
@@ -87,7 +84,7 @@ services:
       # Second Router
       - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
-      - "traefik.tcp.routers.ws-debugging.tls=${DEBUG_CHROME_DEV_TOOLS_USE_TLS}"
+      - "traefik.tcp.routers.ws-debugging.tls=true"
       - "traefik.tcp.routers.ws-debugging.service=ws-debugging"
 
       # Services
