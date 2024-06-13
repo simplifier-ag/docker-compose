@@ -62,8 +62,8 @@ services:
       - MONITORING_DB=${DB_NAME}_monitoring
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST}
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=${DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS}
+      - DEBUG_CHROME_DEV_TOOLS_PORT=2992
+      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
 
       - FEATURE_SSBO_JS_DEBUGGING=true
 
@@ -220,8 +220,11 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --entrypoints.websecure.address=:443
       - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+
+      #Should the timeouts be too short for the debugging, then they can be increased here.
       - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
       - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
+
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
