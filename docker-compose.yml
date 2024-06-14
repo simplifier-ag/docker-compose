@@ -46,7 +46,13 @@ services:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
+      - PLUGINLIST=${PLUGINLIST}
+      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
+      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
+      - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
+      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
 
+      # main simplifier database
       - DB=mysql
       - MYSQL_HOST=mysql
       - MYSQL_PORT=3306
@@ -54,24 +60,22 @@ services:
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DB=${DB_NAME}
 
+      # additional monitoring database
       - MONITORING_DBMS=mysql
       - MONITORING_DB_HOST=mysql
       - MONITORING_DB_PORT=3306
       - MONITORING_DB_USER=simplifier
       - MONITORING_DB_PASS=${DB_PASSWORD}
       - MONITORING_DB=${DB_NAME}_monitoring
+
+      # Feature toggles
+      - FEATURE_SSBO_JS_DEBUGGING=${FEATURE_SSBO_JS_DEBUGGING}
+      # toggled features related settings
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST}
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
       - DEBUG_CHROME_DEV_TOOLS_PORT=2992
       - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
 
-      - FEATURE_SSBO_JS_DEBUGGING=true
-
-      - PLUGINLIST=${PLUGINLIST}
-      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
-      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
-      - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
-      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
     labels:
       - "traefik.enable=true"
 
