@@ -56,6 +56,7 @@ services:
       - SECOND_SEED=launchpad
       - MODULE_HOST=simplifier
       - SIMPLIFIER_HOST=simplifier
+      - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
