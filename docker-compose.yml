@@ -238,7 +238,7 @@ services:
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
     ports:
-      - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:${DEBUG_CHROME_DEV_TOOLS_PORT}
+      - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:2992
       - ${PUBLIC_PORT_HTTP}:80
       - ${PUBLIC_PORT_HTTPS}:443
     networks:
