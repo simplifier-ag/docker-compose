@@ -1,9 +1,9 @@
-# Simplifier 8 EHP 2 
+# Simplifier 8 EHP 3 
 
 ## Changelog:
-* enabled separate DB for monitoring (new feature in EHP 2)
-* changed MySQL binlog retention to 7 days
-* changed traefik to 2.11.2
+* PDF Plugin JS execution is disabled per default
+* Legacy OPC UA connector is disabled per default
+* New optional feature: User language select 
 
 ---
 
