@@ -44,6 +44,7 @@ services:
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
+      - ${HOST_DATA_PATH}/shared:/opt/simplifier/shared
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - PLUGINLIST=${PLUGINLIST}
@@ -153,6 +154,7 @@ services:
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/workflowDesigntime:/home/workflowDesigntime/data
+      - ${HOST_DATA_PATH}/shared:/home/workflowDesigntime/shared
     environment:
       - DB_USER=simplifier
       - DB_PASS=${DB_PASSWORD}

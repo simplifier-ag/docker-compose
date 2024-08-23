@@ -1,9 +1,7 @@
-# Simplifier 8 EHP 3 
+# Simplifier 8 EHP 4
 
 ## Changelog:
-* PDF Plugin JS execution is disabled per default
-* Legacy OPC UA connector is disabled per default
-* New feature: Allow users to select a preferred language in workflows 
+* A new shared volume has been added to simplifier and workflow designtime to be able to exchange files directly
 
 ---
 
