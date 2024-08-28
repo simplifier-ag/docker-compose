@@ -1,4 +1,7 @@
-version: '3.5'
+include:
+  - path: include/include.yaml
+    project_directory: include
+
 services:
 
   mysql:
@@ -19,199 +22,7 @@ services:
     networks:
       - internal-network
 
-
-  mysqlinit:
-    image: simplifierag/mysqlinit:1.2.0
-    container_name: mysqlinit
-    volumes:
-      - ./mysql:/config
-    restart: on-failure:255
-    command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASSWORD}", "-endpoint", "mysql:3306" ]
-    environment:
-      - DB_PREFIX=${DB_NAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-    networks:
-      - internal-network
-    depends_on:
-        mysql:
-          condition: service_healthy
-
-
-  simplifier:
-    container_name: ${INSTANCE_PREFIX}-simplifier
-    #SSBO Debugging is only available from version 8.2
-    image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
-    restart: always
-    volumes:
-      - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
-    environment:
-      - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
-      - PLUGINLIST=${PLUGINLIST}
-      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
-      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
-      - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
-      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
-
-      # main simplifier database
-      - DB=mysql
-      - MYSQL_HOST=mysql
-      - MYSQL_PORT=3306
-      - MYSQL_USER=simplifier
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DB=${DB_NAME}
-
-      # additional monitoring database
-      - MONITORING_DBMS=mysql
-      - MONITORING_DB_HOST=mysql
-      - MONITORING_DB_PORT=3306
-      - MONITORING_DB_USER=simplifier
-      - MONITORING_DB_PASS=${DB_PASSWORD}
-      - MONITORING_DB=${DB_NAME}_monitoring
-
-      # Feature toggles
-      - FEATURE_SSBO_JS_DEBUGGING=${FEATURE_SSBO_JS_DEBUGGING}
-      - FEATURE_LEGACY_OPCUA=${FEATURE_LEGACY_OPCUA}
-      - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
-      - FEATURE_USER_LANGUAGE_SELECT=${FEATURE_USER_LANGUAGE_SELECT}
-
-      # SSBO debugging feature related settings
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST}
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_PORT=2992
-      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
-
-    labels:
-      - "traefik.enable=true"
-
-      # First Router
-      - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
-      - "traefik.http.routers.http-secure.entrypoints=websecure"
-      - "traefik.http.routers.http-secure.tls=true"
-      - "traefik.http.routers.http-secure.middlewares=cors_header"
-
-      # Second Router
-      - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
-      - "traefik.tcp.routers.ws-debugging.tls=true"
-      - "traefik.tcp.routers.ws-debugging.service=ws-debugging"
-
-      # Services
-      # This is required in order to let Chrome Dev-Tools connect to Simplifier
-      - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
-
-      # Middlewares
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey,OData-MaxVersion,OData-Version,MIME-Version,X-CSRF-Token"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginlist=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
-      - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime,OData-Version"
-    healthcheck:
-      test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
-      interval: 15s
-      retries: 20
-      start_period: 120s
-      timeout: 30s
-    networks:
-      - internal-network
-      - public-network
-    depends_on:
-        mysqlinit:
-          condition: service_completed_successfully
-        mysql:
-          condition: service_healthy
-
-
-  launchpad:
-    container_name: ${INSTANCE_PREFIX}-launchpad
-    image: simplifierag/launchpad:${SIMPLIFIER_VERSION}
-    restart: always
-    volumes:
-      - ${HOST_DATA_PATH}/launchpad:/home/launchpad/data
-    environment:
-      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
-      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
-      - MODULE_HOST=${INSTANCE_PREFIX}-launchpad
-      - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
-    networks:
-      - public-network
-      - internal-network
-    depends_on:
-        mysqlinit:
-          condition: service_completed_successfully
-        mysql:
-          condition: service_healthy
-        simplifier:
-          condition: service_healthy
-
-
-  workflow-designtime:
-    container_name: ${INSTANCE_PREFIX}-workflow-designtime
-    image: simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
-    init: true
-    restart: always
-    volumes:
-      - ${HOST_DATA_PATH}/workflowDesigntime:/home/workflowDesigntime/data
-    environment:
-      - DB_USER=simplifier
-      - DB_PASS=${DB_PASSWORD}
-      - DB_DATABASE=${DB_NAME}_wf_dt
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
-      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
-      - MODULE_HOST=${INSTANCE_PREFIX}-workflow-designtime
-      - JVM_ARGS=-Xmx${WF_DT_JVM_HEAP_GB}g
-      - TZ=${TZ}
-    networks:
-      - public-network
-      - internal-network
-    depends_on:
-        mysqlinit:
-          condition: service_completed_successfully
-        mysql:
-          condition: service_healthy
-        simplifier:
-          condition: service_healthy
-
-
-  workflow-runtime:
-    container_name: ${INSTANCE_PREFIX}-workflow-runtime
-    image: simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
-    init: true
-    restart: always
-    volumes:
-      - ${HOST_DATA_PATH}/workflowRuntime:/home/workflow-runtime/data
-    environment:
-      - DB_USER=simplifier
-      - DB_PASS=${DB_PASSWORD}
-      - DB_DATABASE=${DB_NAME}_wf_rt
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
-      - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
-      - MODULE_HOST=${INSTANCE_PREFIX}-workflow-runtime
-      - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
-      - TZ=${TZ}
-      - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
-      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL}
-      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED}
-      - ARCHIVE_TIME=${WF_ARCHIVE_TIME}
-      - SIMPLIFIER_LAUNCHPAD_BASE_URL=https://${SIMPLIFIER_HOSTNAME}
-    networks:
-      - public-network
-      - internal-network
-    depends_on:
-        mysqlinit:
-          condition: service_completed_successfully
-        mysql:
-          condition: service_healthy
-        simplifier:
-          condition: service_healthy
-
-
-  traefik:
+  traefik_nossl:
     image: traefik:2.11.2
     restart: always
     container_name: traefik
@@ -223,10 +34,6 @@ services:
       - TZ=Europe/Berlin
     command:
       - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --entrypoints.web.http.redirections.entrypoint.permanent=true
-      - --entrypoints.websecure.address=:443
       - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
 
       #Should the timeouts be too short for the debugging, then they can be increased here.
@@ -243,10 +50,46 @@ services:
     ports:
       - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:2992
       - ${PUBLIC_PORT_HTTP}:80
-      - ${PUBLIC_PORT_HTTPS}:443
     networks:
       - internal-network
       - public-network
+
+#   traefik:
+#     image: traefik:2.11.2
+#     restart: always
+#     container_name: traefik
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock:ro
+#       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+#       - ${HOST_DATA_PATH}/traefik/:/configuration/
+#     environment:
+#       - TZ=Europe/Berlin
+#     command:
+#       - --entrypoints.web.address=:80
+#       - --entrypoints.web.http.redirections.entrypoint.to=websecure
+#       - --entrypoints.web.http.redirections.entrypoint.scheme=https
+#       - --entrypoints.web.http.redirections.entrypoint.permanent=true
+#       - --entrypoints.websecure.address=:443
+#       - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+#
+#       #Should the timeouts be too short for the debugging, then they can be increased here.
+#       - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
+#       - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
+#
+#       - --providers.docker=true
+#       - --providers.docker.exposedbydefault=false
+#       - --providers.docker.network=public-network
+#       - --providers.file.directory=/configuration/
+#       - --providers.file.watch=true
+#       - --accesslog
+#       - --accesslog.fields.names.StartUTC=drop
+#     ports:
+#       - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:2992
+#       - ${PUBLIC_PORT_HTTP}:80
+#       - ${PUBLIC_PORT_HTTPS}:443
+#     networks:
+#       - internal-network
+#       - public-network
 
   watchtower:
     image: containrrr/watchtower

@@ -1,0 +1,14 @@
+database-owner:
+  login: ${DB_USER}
+  password: ${DB_PASSWORD}
+  host: "%"
+error-level: onGrant
+databases:
+  - {{instance_name}}
+  - {{instance_name}}_content
+  - {{instance_name}}_keyvalue
+  - {{instance_name}}_session
+  - {{instance_name}}_jsonstore
+  - {{instance_name}}_wf_rt
+  - {{instance_name}}_wf_dt
+  - {{instance_name}}_monitoring

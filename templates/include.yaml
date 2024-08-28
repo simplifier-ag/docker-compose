@@ -1,0 +1,7 @@
+include:
+{{#.}}
+  - path:
+      - {{.}}/docker-compose.yaml
+    env_file:
+      - {{.}}/{{.}}.env
+{{/.}}

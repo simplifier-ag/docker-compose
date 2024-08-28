@@ -1,0 +1,184 @@
+services:
+
+  {{instance_name}}-mysqlinit:
+    image: simplifierag/mysqlinit:1.2.0
+    container_name: {{instance_name}}-mysqlinit
+    restart: on-failure:255
+    volumes:
+      - ./mysql:/config:ro
+    command: [ "/runtime/mysqlinit", "-config", "/config/config.yaml", "-user", "root", "-pass", "${DB_ROOT_PASSWORD}", "-endpoint", "mysql:3306" ]
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    labels:
+      - "instance={{instance_name}}"
+    networks:
+      - internal-network
+    depends_on:
+        mysql:
+          condition: service_healthy
+
+  {{instance_name}}-simplifier:
+    container_name: {{instance_name}}-simplifier
+    image: simplifierag/${SIMPLIFIER_IMAGE_NAME}:${SIMPLIFIER_TAG}
+    restart: always
+    volumes:
+      - ${HOST_DATA_PATH_INSTANCE}:/opt/simplifier/data
+    environment:
+      - PLUGINLIST=${PLUGINLIST}
+      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
+      - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
+
+      - DB=mysql
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DB={{instance_name}}
+
+      - MONITORING_DB={{instance_name}}_monitoring
+      - MONITORING_DBMS=mysql
+      - MONITORING_DB_HOST=mysql
+      - MONITORING_DB_PASS=${DB_PASSWORD}
+      - MONITORING_DB_USER=${DB_USER}
+
+      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${SIMPLIFIER_HOSTNAME}
+      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+      - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
+
+      - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=false
+      - FEATURE_SSBO_JS_DEBUGGING=true
+      - FEATURE_LEGACY_OPCUA=true
+      - FEATURE_USER_LANGUAGE_SELECT=true
+    labels:
+      - "instance={{instance_name}}"
+
+      - "traefik.enable=true"
+      # First Router
+      - "traefik.http.routers.{{instance_name}}.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
+      # - "traefik.http.routers.{{instance_name}}.entrypoints=websecure"
+      # - "traefik.http.routers.{{instance_name}}.tls=true"
+      - "traefik.http.routers.{{instance_name}}.middlewares={{instance_name}}_cors_header"
+      ## Second Router
+      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.rule=HostSNI(`*`)"
+      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.entrypoints=debugging${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
+      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.tls=true"
+      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.service={{instance_name}}_ws-debugging"
+      # Services
+      # This is required in order to let Chrome Dev-Tools connect to Simplifier
+      #- "traefik.tcp.services.{{instance_name}}_ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
+      # Middlewares
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,SimplifierApiKey,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,OData-MaxVersion,OData-Version,X-CSRF-Token,MIME-Version,SimplifierModule"
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolalloworiginList=http://${SIMPLIFIER_HOSTNAME},ionic://localhost"
+      #- "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolalloworiginList=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolmaxage=1728000"
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.addvaryheader=true"
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
+      - "com.centurylinklabs.watchtower.enable=true"
+    healthcheck:
+      test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
+      interval: 15s
+      retries: 20
+      start_period: 120s
+      timeout: 30s
+    depends_on:
+      {{instance_name}}-mysqlinit:
+        condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal-network
+      - public-network
+
+  {{instance_name}}-launchpad:
+    container_name: {{instance_name}}-launchpad
+    image: simplifierag/${LAUNCHPAD_IMAGE_NAME}:${LAUNCHPAD_TAG}
+    restart: always
+    environment:
+      - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
+      - SIMPLIFIER_HOST={{instance_name}}-simplifier
+      - SECOND_SEED={{instance_name}}-launchpad
+      - MODULE_HOST={{instance_name}}-launchpad
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "instance={{instance_name}}"
+    networks:
+      - internal-network
+      - public-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      {{instance_name}}-mysqlinit:
+        condition: service_completed_successfully
+      {{instance_name}}-simplifier:
+        condition: service_healthy
+
+  {{instance_name}}-workflow-designtime:
+    container_name: {{instance_name}}-workflow-designtime
+    image: simplifierag/${WORKFLOW_DESIGNTIME_IMAGE_NAME}:${WORKFLOW_DESIGNTIME_TAG}
+    init: true
+    restart: always
+    volumes:
+      - ${HOST_DATA_PATH_INSTANCE}/workflowDesigntime:/home/workflowDesigntime/data
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASSWORD}
+      - DB_DATABASE={{instance_name}}_wf_dt
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - SIMPLIFIER_HOST={{instance_name}}-simplifier
+      - SECOND_SEED={{instance_name}}-launchpad
+      - MODULE_HOST={{instance_name}}-workflow-designtime
+      - JVM_ARGS=-Xmx${WF_DT_JVM_HEAP_GB}g
+      - TZ=${TZ}
+    labels:
+      - "instance={{instance_name}}"
+      - "com.centurylinklabs.watchtower.enable=true"
+    depends_on:
+      {{instance_name}}-mysqlinit:
+        condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
+      {{instance_name}}-simplifier:
+        condition: service_healthy
+    networks:
+      - internal-network
+      - public-network
+
+  {{instance_name}}-workflow-runtime:
+    container_name: {{instance_name}}-workflow-runtime
+    image: simplifierag/${WORKFLOW_RUNTIME_IMAGE_NAME}:${WORKFLOW_RUNTIME_TAG}
+    init: true
+    restart: always
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASSWORD}
+      - DB_DATABASE={{instance_name}}_wf_rt
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - SIMPLIFIER_HOST={{instance_name}}-simplifier
+      - SECOND_SEED={{instance_name}}-launchpad
+      - MODULE_HOST={{instance_name}}-workflow-runtime
+      - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
+      - TZ=${TZ}
+      - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
+      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL}
+      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED}
+      - ARCHIVE_TIME=${WF_ARCHIVE_TIME}
+      - SIMPLIFIER_LAUNCHPAD_BASE_URL=https://${SIMPLIFIER_HOSTNAME}
+    labels:
+      - "instance={{instance_name}}"
+      - "com.centurylinklabs.watchtower.enable=true"
+    depends_on:
+      {{instance_name}}-mysqlinit:
+        condition: service_completed_successfully
+      mysql:
+        condition: service_healthy
+      {{instance_name}}-simplifier:
+        condition: service_healthy
+    networks:
+      - internal-network
+      - public-network
