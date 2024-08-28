@@ -13,14 +13,20 @@ Docker-Compose templates to run [Simplifier](https://simplifier.io)
 
 ## Docker Version
 This setup requires 
-- docker version 20.10.17
-- docker compose v2 2.20.3
+- docker version: **20.10.17**
+- docker compose v2 version: **2.20.3**
 
+## Vagrant setup 
 
-## ```docker-compose.yml```
+- ```Vagrantfile```:
+    Minimalistic server based on debian bookworm to run the simplfier multiinstance setup for  
+
+## Setup 
 
 Multi Simplifier Instance setup with corresponding MySQL and Reverse Proxy Traefik
 
+- ```compose.yaml```
+    root docker compose setup 
 - ```template_engine/execute.sh```: 
     template mechanism to create multiple instances
 - ```instances.yaml```:
@@ -38,9 +44,6 @@ Multi Simplifier Instance setup with corresponding MySQL and Reverse Proxy Traef
 
 ### description / examples
 - TODO
-
-
-
 
 # For an up-to-date Setup Guide, visit our Community
 

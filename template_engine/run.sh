@@ -14,10 +14,11 @@ create_include () {
   mkdir -p ${dir}
   echo $params | base64 -d | yq -s -y -M '.[0] * .[1]' /work/default.yaml - > ${dir}/params_in.yaml
   mustache ${dir}/params_in.yaml /work/templates/instance/instance.env > ${dir}/${instance}.env
-  mustache ${dir}/params_in.yaml /work/templates/instance/docker-compose_nossl.yaml > ${dir}/docker-compose.yaml
+  # mustache ${dir}/params_in.yaml /work/templates/instance/compose.yaml > ${dir}/compose.yaml
+  mustache ${dir}/params_in.yaml /work/templates/instance/compose_nossl.yaml > ${dir}/compose.yaml
   mkdir -p ${dir}/mysql
   mustache ${dir}/params_in.yaml /work/templates/instance/mysql/config.yaml > ${dir}/mysql/config.yaml
-  (cd ${dir} && sha256sum params_in.yaml ${instance}.env docker-compose.yaml mysql/config.yaml > ${dir}/fingerprints.sha256)
+  (cd ${dir} && sha256sum params_in.yaml ${instance}.env compose.yaml mysql/config.yaml > ${dir}/fingerprints.sha256)
   chown -R ${USERID} ${dir}
 }
 
