@@ -1,0 +1,7 @@
+include:
+  - path:
+      - traefik.yaml
+  - path:
+      - simplifier/compose.yaml
+    env_file:
+      - simplifier/simplifier.env

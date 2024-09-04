@@ -1,0 +1,14 @@
+database-owner:
+  login: ${DB_USER}
+  password: ${DB_PASSWORD}
+  host: "%"
+error-level: onGrant
+databases:
+  - simplifier
+  - simplifier_content
+  - simplifier_keyvalue
+  - simplifier_session
+  - simplifier_jsonstore
+  - simplifier_wf_rt
+  - simplifier_wf_dt
+  - simplifier_monitoring

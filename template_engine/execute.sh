@@ -63,3 +63,4 @@ docker run --rm \
   -e OVERWRITE=${FORCE_OVERWRITE} \
   -e USERID=$UID \
   ${template_container_name} /work/run.sh
+

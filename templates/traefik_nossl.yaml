@@ -1,0 +1,36 @@
+services:
+  traefik:
+    image: traefik:2.11.2
+    restart: always
+    container_name: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    environment:
+      - TZ=Europe/Berlin
+    command:
+      - --entrypoints.web.address=:80
+{{#exposed_debugging_ports}}
+      - --entrypoints.debugging{{.}}.address=:{{.}}
+{{/exposed_debugging_ports}}
+
+      #Should the timeouts be too short for the debugging, then they can be increased here.
+      - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
+      - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
+
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=public-network
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
+      - --accesslog
+      - --accesslog.fields.names.StartUTC=drop
+    ports:
+      - ${PUBLIC_PORT_HTTP}:80
+{{#exposed_debugging_ports}}
+      - {{.}}:{{.}}
+{{/exposed_debugging_ports}}
+
+    networks:
+      - internal-network
+      - public-network

@@ -1,8 +1,8 @@
 services:
 
-  {{instance_name}}-mysqlinit:
+  simplifier-mysqlinit:
     image: simplifierag/mysqlinit:1.2.0
-    container_name: {{instance_name}}-mysqlinit
+    container_name: simplifier-mysqlinit
     restart: on-failure:255
     volumes:
       - ./mysql:/config:ro
@@ -11,15 +11,15 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     labels:
-      - "instance={{instance_name}}"
+      - "instance=simplifier"
     networks:
       - internal-network
     depends_on:
         mysql:
           condition: service_healthy
 
-  {{instance_name}}-simplifier:
-    container_name: {{instance_name}}-simplifier
+  simplifier-simplifier:
+    container_name: simplifier-simplifier
     image: ${SIMPLIFIER_IMAGE_NAME}
     restart: always
     volumes:
@@ -34,17 +34,17 @@ services:
       - MYSQL_PORT=3306
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DB={{instance_name}}
+      - MYSQL_DB=simplifier
 
-      - MONITORING_DB={{instance_name}}_monitoring
+      - MONITORING_DB=simplifier_monitoring
       - MONITORING_DBMS=mysql
       - MONITORING_DB_HOST=mysql
       - MONITORING_DB_PASS=${DB_PASSWORD}
       - MONITORING_DB_USER=${DB_USER}
 
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${SIMPLIFIER_HOSTNAME}
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT={{exposed_debugging_port}}
-      - DEBUG_CHROME_DEV_TOOLS_PORT={{exposed_debugging_port}}
+      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=2985
+      - DEBUG_CHROME_DEV_TOOLS_PORT=2985
       - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
 
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=false
@@ -52,30 +52,27 @@ services:
       - FEATURE_LEGACY_OPCUA=true
       - FEATURE_USER_LANGUAGE_SELECT=true
     labels:
-      - "instance={{instance_name}}"
+      - "instance=simplifier"
 
       - "traefik.enable=true"
       # First Router
-      - "traefik.http.routers.{{instance_name}}.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
-      - "traefik.http.routers.{{instance_name}}.entrypoints=websecure"
-      - "traefik.http.routers.{{instance_name}}.tls=true"
-      - "traefik.http.routers.{{instance_name}}.middlewares={{instance_name}}_cors_header"
-      # Second Router
-      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.entrypoints=debugging{{exposed_debugging_port}}"
-      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.tls=true"
-      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.service={{instance_name}}_ws-debugging"
+      - "traefik.http.routers.simplifier.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
+      - "traefik.http.routers.simplifier.middlewares=simplifier_cors_header"
+      ## Second Router
+      - "traefik.tcp.routers.simplifier_ws-debugging.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.simplifier_ws-debugging.entrypoints=debugging2985"
+      - "traefik.tcp.routers.simplifier_ws-debugging.service=simplifier_ws-debugging"
       # Services
       # This is required in order to let Chrome Dev-Tools connect to Simplifier
-      - "traefik.tcp.services.{{instance_name}}_ws-debugging.loadbalancer.server.port={{exposed_debugging_port}}"
+      - "traefik.tcp.services.simplifier_ws-debugging.loadbalancer.server.port=2985"
       # Middlewares
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,SimplifierApiKey,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,OData-MaxVersion,OData-Version,X-CSRF-Token,MIME-Version,SimplifierModule"
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolalloworiginList=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolmaxage=1728000"
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.addvaryheader=true"
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,SimplifierApiKey,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,OData-MaxVersion,OData-Version,X-CSRF-Token,MIME-Version,SimplifierModule"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.accesscontrolalloworiginList=http://${SIMPLIFIER_HOSTNAME},ionic://localhost"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.accesscontrolmaxage=1728000"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.addvaryheader=true"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.simplifier_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
       - "com.centurylinklabs.watchtower.enable=true"
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
@@ -84,7 +81,7 @@ services:
       start_period: 120s
       timeout: 30s
     depends_on:
-      {{instance_name}}-mysqlinit:
+      simplifier-mysqlinit:
         condition: service_completed_successfully
       mysql:
         condition: service_healthy
@@ -92,31 +89,31 @@ services:
       - internal-network
       - public-network
 
-  {{instance_name}}-launchpad:
-    container_name: {{instance_name}}-launchpad
+  simplifier-launchpad:
+    container_name: simplifier-launchpad
     image: simplifierag/${LAUNCHPAD_IMAGE_NAME}:${LAUNCHPAD_TAG}
     restart: always
     environment:
       - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
-      - SIMPLIFIER_HOST={{instance_name}}-simplifier
-      - SECOND_SEED={{instance_name}}-launchpad
-      - MODULE_HOST={{instance_name}}-launchpad
+      - SIMPLIFIER_HOST=simplifier-simplifier
+      - SECOND_SEED=simplifier-launchpad
+      - MODULE_HOST=simplifier-launchpad
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
-      - "instance={{instance_name}}"
+      - "instance=simplifier"
     networks:
       - internal-network
       - public-network
     depends_on:
       mysql:
         condition: service_healthy
-      {{instance_name}}-mysqlinit:
+      simplifier-mysqlinit:
         condition: service_completed_successfully
-      {{instance_name}}-simplifier:
+      simplifier-simplifier:
         condition: service_healthy
 
-  {{instance_name}}-workflow-designtime:
-    container_name: {{instance_name}}-workflow-designtime
+  simplifier-workflow-designtime:
+    container_name: simplifier-workflow-designtime
     image: simplifierag/${WORKFLOW_DESIGNTIME_IMAGE_NAME}:${WORKFLOW_DESIGNTIME_TAG}
     init: true
     restart: always
@@ -125,42 +122,42 @@ services:
     environment:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASSWORD}
-      - DB_DATABASE={{instance_name}}_wf_dt
+      - DB_DATABASE=simplifier_wf_dt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST={{instance_name}}-simplifier
-      - SECOND_SEED={{instance_name}}-launchpad
-      - MODULE_HOST={{instance_name}}-workflow-designtime
+      - SIMPLIFIER_HOST=simplifier-simplifier
+      - SECOND_SEED=simplifier-launchpad
+      - MODULE_HOST=simplifier-workflow-designtime
       - JVM_ARGS=-Xmx${WF_DT_JVM_HEAP_GB}g
       - TZ=${TZ}
     labels:
-      - "instance={{instance_name}}"
+      - "instance=simplifier"
       - "com.centurylinklabs.watchtower.enable=true"
     depends_on:
-      {{instance_name}}-mysqlinit:
+      simplifier-mysqlinit:
         condition: service_completed_successfully
       mysql:
         condition: service_healthy
-      {{instance_name}}-simplifier:
+      simplifier-simplifier:
         condition: service_healthy
     networks:
       - internal-network
       - public-network
 
-  {{instance_name}}-workflow-runtime:
-    container_name: {{instance_name}}-workflow-runtime
+  simplifier-workflow-runtime:
+    container_name: simplifier-workflow-runtime
     image: simplifierag/${WORKFLOW_RUNTIME_IMAGE_NAME}:${WORKFLOW_RUNTIME_TAG}
     init: true
     restart: always
     environment:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASSWORD}
-      - DB_DATABASE={{instance_name}}_wf_rt
+      - DB_DATABASE=simplifier_wf_rt
       - DB_HOST=mysql
       - DB_PORT=3306
-      - SIMPLIFIER_HOST={{instance_name}}-simplifier
-      - SECOND_SEED={{instance_name}}-launchpad
-      - MODULE_HOST={{instance_name}}-workflow-runtime
+      - SIMPLIFIER_HOST=simplifier-simplifier
+      - SECOND_SEED=simplifier-launchpad
+      - MODULE_HOST=simplifier-workflow-runtime
       - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
       - TZ=${TZ}
       - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
@@ -169,14 +166,14 @@ services:
       - ARCHIVE_TIME=${WF_ARCHIVE_TIME}
       - SIMPLIFIER_LAUNCHPAD_BASE_URL=https://${SIMPLIFIER_HOSTNAME}
     labels:
-      - "instance={{instance_name}}"
+      - "instance=simplifier"
       - "com.centurylinklabs.watchtower.enable=true"
     depends_on:
-      {{instance_name}}-mysqlinit:
+      simplifier-mysqlinit:
         condition: service_completed_successfully
       mysql:
         condition: service_healthy
-      {{instance_name}}-simplifier:
+      simplifier-simplifier:
         condition: service_healthy
     networks:
       - internal-network

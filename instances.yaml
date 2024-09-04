@@ -1,9 +1,0 @@
-develop:
-  instance_name: develop
-  db_password: develop_pass
-  simplifier_hostname: develop.simplifier.io
-
-production:
-  instance_name: prod
-  db_password: prod_pass
-  simplifier_hostname: prod.simplifier.io

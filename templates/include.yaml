@@ -1,4 +1,6 @@
 include:
+  - path:
+      - traefik.yaml
 {{#.}}
   - path:
       - {{.}}/compose.yaml

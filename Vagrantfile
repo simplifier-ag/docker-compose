@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
 
   # config.vm.box_check_update = false
 
-  config.vm.network "forwarded_port", guest: 8080, host: 8080
+  # config.vm.network "forwarded_port", guest: 8080, host: 8080
 
   config.vm.network "private_network", ip: "192.168.56.10"
 
@@ -35,6 +35,5 @@ Vagrant.configure("2") do |config|
      docker run -d -p 5000:5000 --restart=always --name registry registry:2
      mkdir -p /var/lib/simplifier/mysql
      mkdir -p /var/lib/simplifier/data
-     mkdir -p /etc/simplifier/traefik
    SHELL
 end

@@ -1,8 +1,7 @@
 .idea
-simplifier-docker-compose.iml
 *~
 .vagrant
 stuff
 .env
-security.toml
 temp
+instances_ssl.yaml

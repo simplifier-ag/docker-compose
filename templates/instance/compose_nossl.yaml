@@ -20,7 +20,7 @@ services:
 
   {{instance_name}}-simplifier:
     container_name: {{instance_name}}-simplifier
-    image: simplifierag/${SIMPLIFIER_IMAGE_NAME}:${SIMPLIFIER_TAG}
+    image: ${SIMPLIFIER_IMAGE_NAME}
     restart: always
     volumes:
       - ${HOST_DATA_PATH_INSTANCE}:/opt/simplifier/data
@@ -43,8 +43,8 @@ services:
       - MONITORING_DB_USER=${DB_USER}
 
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${SIMPLIFIER_HOSTNAME}
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
+      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT={{exposed_debugging_port}}
+      - DEBUG_CHROME_DEV_TOOLS_PORT={{exposed_debugging_port}}
       - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
 
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=false
@@ -57,22 +57,18 @@ services:
       - "traefik.enable=true"
       # First Router
       - "traefik.http.routers.{{instance_name}}.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
-      # - "traefik.http.routers.{{instance_name}}.entrypoints=websecure"
-      # - "traefik.http.routers.{{instance_name}}.tls=true"
       - "traefik.http.routers.{{instance_name}}.middlewares={{instance_name}}_cors_header"
       ## Second Router
-      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.rule=HostSNI(`*`)"
-      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.entrypoints=debugging${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
-      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.tls=true"
-      #- "traefik.tcp.routers.{{instance_name}}_ws-debugging.service={{instance_name}}_ws-debugging"
+      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.entrypoints=debugging{{exposed_debugging_port}}"
+      - "traefik.tcp.routers.{{instance_name}}_ws-debugging.service={{instance_name}}_ws-debugging"
       # Services
       # This is required in order to let Chrome Dev-Tools connect to Simplifier
-      #- "traefik.tcp.services.{{instance_name}}_ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
+      - "traefik.tcp.services.{{instance_name}}_ws-debugging.loadbalancer.server.port={{exposed_debugging_port}}"
       # Middlewares
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Length,Authorization,SimplifierToken,Gen-Token-Origin,SimplifierApp,SimplifierModule,SimplifierModuleInterface,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,SimplifierApiKey,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,OData-MaxVersion,OData-Version,X-CSRF-Token,MIME-Version,SimplifierModule"
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolalloworiginList=http://${SIMPLIFIER_HOSTNAME},ionic://localhost"
-      #- "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolalloworiginList=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accesscontrolmaxage=1728000"
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.addvaryheader=true"
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlAllowCredentials=true"
