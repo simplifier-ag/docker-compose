@@ -52,9 +52,6 @@ create_include () {
     mustache ${dir}/params_in.yaml /work/templates/instance/compose_nossl.yaml > ${dir}/compose.yaml
   fi
 
-  # mustache ${dir}/params_in.yaml /work/templates/instance/compose.yaml > ${dir}/compose.yaml
-  # mustache ${dir}/params_in.yaml /work/templates/instance/compose_nossl.yaml > ${dir}/compose.yaml
-
   mkdir -p ${dir}/mysql
   mustache ${dir}/params_in.yaml /work/templates/instance/mysql/config.yaml > ${dir}/mysql/config.yaml
   (cd ${dir} && sha256sum params_in.yaml ${instance}.env compose.yaml mysql/config.yaml > ${dir}/fingerprints.sha256)
@@ -104,9 +101,6 @@ if [ $failed -eq "0" ]; then
   else
     mustache ${PARAM_TRAEFIK} /work/templates/traefik_nossl.yaml > ${DEST}/traefik.yaml
   fi
-
-  # mustache ${PARAM_TRAEFIK} /work/templates/traefik.yaml > ${DEST}/traefik.yaml
-  # mustache ${PARAM_TRAEFIK} /work/templates/traefik_nossl.yaml > ${DEST}/traefik.yaml
 
   if [ ${HAS_SSL} = "true" ]; then
     if [ $OVERWRITE -eq "0" ]; then
