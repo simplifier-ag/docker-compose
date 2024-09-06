@@ -63,7 +63,72 @@ Multi Simplifier Instance setup with corresponding MySQL and Reverse Proxy Traef
 
 ### description / examples
 
-- **TODO**
+#### (1) create an ```.env``` file
+To have the setup running in the first place it is necessary to create a ```.env```
+file. Use the ```env.template``` file as a template and then define the required values.
+
+#### (2) default setup
+The initial setup defines a single instance without ssl, witch servers the domain
+```instance.simplifier.io```. 
+This can be started via ```docker compose up -d```
+
+#### (3) define your required deployment
+Custom instances are defined in a central "deployment" file. There you define 
+your instances. Examples are in the ```instances_examples``` folder.
+
+for example:
+```yaml
+domain_suffix: simplifier.io
+instances:
+  develop:
+    instance_name: develop
+    db_password: develop_pass
+    simplifier_subdomain: develop
+    exposed_debugging_port: 2985
+  production:
+    instance_name: prod
+    db_password: prod_pass
+    simplifier_subdomain: prod
+    exposed_debugging_port: 2986
+```
+
+- _domain_suffix_ (required): domain suffix for all simplifier instances
+- _secure_ (optional): TLS Certs
+  - _key_ (required): PRIVATE KEY
+  - _wildcard_crt_for_domain_suffix_ (required): CERTIFICATE
+- _instances_ (required): map of instance definitions
+  - _instance_name_ (required): name of instance
+  - _db_password_ (required): database password for the instance
+  - _simplifier_subdomain_ (required): subdomain
+  - _exposed_debugging_port_ (required): debugging port
+  - _override_image_name_ (optional): override image with custom (maybe labs or preview simplifier image) 
+  - _simplifier_version_ (required): simplifier version 
+
+It is possible to define default values for each instances in the ```instance_default.yaml```. 
+Currently the simplifier version is defined here. Any other values mentioned in 
+the above description from _instance_ are possible in ```instance_default.yaml```.
+
+#### (4) apply your deployment
+
+To run a deployment, defined in a yaml file, you need to run the ```./apply.sh```
+tool:
+
+```
+usage: ./apply.sh [-fh] -p parameter_file.yaml
+  -h                  show help text
+  -f                  force overwrite
+  -p parameter_file   use <parameter_file>
+```
+
+This will create the required compose files in the "include" directory, 
+according to the definitions in the yaml file, and restart the 
+"docker compose" setup.
+
+It is possible to manage the compose setup manually via the "docker compose" tool.
+
+It is also possible to modify the files created in "include" manually. If you do so 
+and rerun the ```./apply.sh```, your manually changed files will not be overwritten.
+The apply tool will exit with a warning then, unless you set the "-f" switch for apply.
 
 # For an up-to-date Setup Guide, visit our Community
 

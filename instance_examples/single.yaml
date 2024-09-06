@@ -5,6 +5,5 @@ instances:
     db_password: develop_pass
     simplifier_subdomain: instance
     exposed_debugging_port: 2985
-    override_image_name: "127.0.0.1:5000/simplifier:SNAPSHOT"
 
 
