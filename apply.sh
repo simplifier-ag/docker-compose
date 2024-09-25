@@ -46,8 +46,6 @@ fi
 
 echo "create instances defined in: ${PARAMETER_FILE}"
 
-(cd ${DIR} && docker compose down)
-
 if [ $FORCE_OVERWRITE -eq "1" ]; then
     echo "force overwrite existing configuration"
     ${DIR}/template_engine/execute.sh -p ${PARAMETER_FILE} -f
@@ -55,4 +53,4 @@ else
     ${DIR}/template_engine/execute.sh -p ${PARAMETER_FILE}
 fi
 
-(cd ${DIR} && docker compose up -d)
+(cd ${DIR} && docker compose up -d --remove-orphans --pull always)

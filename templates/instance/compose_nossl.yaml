@@ -24,6 +24,7 @@ services:
     restart: always
     volumes:
       - ${HOST_DATA_PATH_INSTANCE}:/opt/simplifier/data
+      - ${HOST_DATA_PATH_INSTANCE}/shared:/opt/simplifier/shared
     environment:
       - PLUGINLIST=${PLUGINLIST}
       - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
@@ -93,6 +94,8 @@ services:
     container_name: {{instance_name}}-launchpad
     image: simplifierag/${LAUNCHPAD_IMAGE_NAME}:${LAUNCHPAD_TAG}
     restart: always
+    volumes:
+      - ${HOST_DATA_PATH_INSTANCE}/launchpad:/home/launchpad/data
     environment:
       - JVM_ARGS=-Xmx${LAUNCHPAD_JVM_HEAP_GB}g
       - SIMPLIFIER_HOST={{instance_name}}-simplifier
@@ -119,6 +122,7 @@ services:
     restart: always
     volumes:
       - ${HOST_DATA_PATH_INSTANCE}/workflowDesigntime:/home/workflowDesigntime/data
+      - ${HOST_DATA_PATH_INSTANCE}/shared:/home/workflowDesigntime/shared
     environment:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASSWORD}
@@ -149,6 +153,8 @@ services:
     image: simplifierag/${WORKFLOW_RUNTIME_IMAGE_NAME}:${WORKFLOW_RUNTIME_TAG}
     init: true
     restart: always
+    volumes:
+      - ${HOST_DATA_PATH_INSTANCE}/workflowRuntime:/home/workflow-runtime/data
     environment:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASSWORD}
