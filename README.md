@@ -101,7 +101,11 @@ instances:
   - _db_password_ (required): database password for the instance
   - _simplifier_subdomain_ (required): subdomain
   - _exposed_debugging_port_ (required): debugging port
-  - _override_image_name_ (optional): override image with custom (maybe labs or preview simplifier image) 
+  - _override_simplifier_image_name_ (optional): override simplifier image with custom (maybe labs or preview simplifier image)
+  - _override_launchpad_image_name_ (optional): override launchpad image with custom 
+  - _override_wfdt_image_name_ (optional): override workflow designtime image with custom
+  - _override_wfrt_image_name_ (optional): override workflow runtime image with custom 
+  - _simplifier_labels_ (optional): list of additional labels appended to the simplifier container
   - _simplifier_version_ (required): simplifier version 
 
 It is possible to define default values for each instances in the ```instance_default.yaml```. 

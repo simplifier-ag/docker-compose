@@ -75,6 +75,9 @@ services:
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlAllowCredentials=true"
       - "traefik.http.middlewares.{{instance_name}}_cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime"
       - "com.centurylinklabs.watchtower.enable=true"
+      {{#simplifier_labels}}
+      - "{{.}}"
+      {{/simplifier_labels}}
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
       interval: 30s
@@ -92,7 +95,7 @@ services:
 
   {{instance_name}}-launchpad:
     container_name: {{instance_name}}-launchpad
-    image: simplifierag/${LAUNCHPAD_IMAGE_NAME}:${LAUNCHPAD_TAG}
+    image: {{#override_launchpad_image_name}}{{.}}{{/override_launchpad_image_name}}{{^override_launchpad_image_name}}simplifierag/${LAUNCHPAD_IMAGE_NAME}:${LAUNCHPAD_TAG}{{/override_launchpad_image_name}}
     restart: always
     volumes:
       - ${HOST_DATA_PATH_INSTANCE}/launchpad:/home/launchpad/data
@@ -117,7 +120,7 @@ services:
 
   {{instance_name}}-workflow-designtime:
     container_name: {{instance_name}}-workflow-designtime
-    image: simplifierag/${WORKFLOW_DESIGNTIME_IMAGE_NAME}:${WORKFLOW_DESIGNTIME_TAG}
+    image: {{#override_wfdt_image_name}}{{.}}{{/override_wfdt_image_name}}{{^override_wfdt_image_name}}simplifierag/${WORKFLOW_DESIGNTIME_IMAGE_NAME}:${WORKFLOW_DESIGNTIME_TAG}{{/override_wfdt_image_name}}
     init: true
     restart: always
     volumes:
@@ -150,7 +153,7 @@ services:
 
   {{instance_name}}-workflow-runtime:
     container_name: {{instance_name}}-workflow-runtime
-    image: simplifierag/${WORKFLOW_RUNTIME_IMAGE_NAME}:${WORKFLOW_RUNTIME_TAG}
+    image: {{#override_wfrt_image_name}}{{.}}{{/override_wfrt_image_name}}{{^override_wfrt_image_name}}simplifierag/${WORKFLOW_RUNTIME_IMAGE_NAME}:${WORKFLOW_RUNTIME_TAG}{{/override_wfrt_image_name}}
     init: true
     restart: always
     volumes:
