@@ -52,6 +52,10 @@ services:
       - FEATURE_SSBO_JS_DEBUGGING=true
       - FEATURE_LEGACY_OPCUA=true
       - FEATURE_USER_LANGUAGE_SELECT=true
+{{#enable_metrics}}
+      - JMX_AGENT_PLUGINS=true
+      - JMX_AGENT=true
+{{/enable_metrics}}
     labels:
       - "instance={{instance_name}}"
 
@@ -80,10 +84,10 @@ services:
       {{/simplifier_labels}}
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
-      interval: 30s
-      retries: 50
-      start_period: 120s
-      timeout: 50s
+      interval: 15s
+      retries: 150
+      start_period: 50s
+      timeout: 400s
     depends_on:
       {{instance_name}}-mysqlinit:
         condition: service_completed_successfully

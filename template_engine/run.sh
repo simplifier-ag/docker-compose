@@ -10,13 +10,40 @@ CONFIG_DIR_TRAEFIK="${DEST}/traefik_conf"
 mkdir -p ${CONFIG_DIR_TRAEFIK}
 INSTANCES=`yq '.instances' ${PARAM}|  yq 'keys_unsorted' | jq -r '.[]'`
 HAS_SSL=$(yq 'has("secure")' ${PARAM})
+SSL_CERT_TYPE="N/A"
+if [ ${HAS_SSL} = "true" ]; then
+  type=$(yq -r .secure.type ${PARAM} | tr '[:upper:]' '[:lower:]')
+  case ${type} in
+    "custom")
+      SSL_CERT_TYPE=${type}
+      ;;
+    "letsencrypt")
+      SSL_CERT_TYPE=${type}
+      ;;
+    *)
+      echo unknown certification method ${type}
+      exit 1
+      ;;
+  esac
+fi
+echo "ssl config: "
+echo "  - has ssl: $HAS_SSL"
+echo "  - ssl type: $SSL_CERT_TYPE"
+echo "____________________________"
+
 
 create_ssl_config_for_traefik () {
-  domain_suffix=$(yq -r .domain_suffix ${PARAM})
-  mustache ${PARAM} /work/templates/traefik_config/security.toml > ${CONFIG_DIR_TRAEFIK}/security.toml
-  yq -r .secure.key ${PARAM} > ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.key
-  yq -r .secure.wildcard_crt_for_domain_suffix ${PARAM} > ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.crt
-  (cd ${CONFIG_DIR_TRAEFIK} && sha256sum security.toml ${domain_suffix}.crt ${domain_suffix}.key > ${CONFIG_DIR_TRAEFIK}/fingerprints.sha256)
+  rm -f ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.key ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.crt ${CONFIG_DIR_TRAEFIK}/fingerprints.sha256 ${CONFIG_DIR_TRAEFIK}/security.toml
+  if [[ ${SSL_CERT_TYPE} == "custom" ]]; then
+    domain_suffix=$(yq -r .domain_suffix ${PARAM})
+    mustache ${PARAM} /work/templates/traefik_config/security.toml > ${CONFIG_DIR_TRAEFIK}/security.toml
+    yq -r .secure.key ${PARAM} > ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.key
+    yq -r .secure.wildcard_crt_for_domain_suffix ${PARAM} > ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.crt
+    (cd ${CONFIG_DIR_TRAEFIK} && sha256sum security.toml ${domain_suffix}.crt ${domain_suffix}.key > ${CONFIG_DIR_TRAEFIK}/fingerprints.sha256)
+  fi
+  #if [ ${SSL_TYPE = "letsencrypt"} ]; then
+  ## nothing to do here at the moment
+  #fi
 }
 
 check_if_ssl_config_for_traefik_modified () {
@@ -33,6 +60,9 @@ create_params_for_traefik () {
   for instance in ${INSTANCES}; do
     echo "  -" $(yq -r .instances.${instance}.exposed_debugging_port ${PARAM}) >> ${PARAM_TRAEFIK}
   done;
+  if [ ${HAS_SSL} = "true" ]; then
+    yq -y -M .secure ${PARAM} >> ${PARAM_TRAEFIK}
+  fi
 }
 
 create_include () {
@@ -47,7 +77,18 @@ create_include () {
   echo $param_content | base64 -d > ${dir}/params_in.yaml
   mustache ${dir}/params_in.yaml /work/templates/instance/instance.env > ${dir}/${instance}.env
   if [ ${HAS_SSL} = "true" ]; then
-    mustache ${dir}/params_in.yaml /work/templates/instance/compose.yaml > ${dir}/compose.yaml
+    case ${SSL_CERT_TYPE} in
+      "custom")
+        mustache ${dir}/params_in.yaml /work/templates/instance/compose.yaml > ${dir}/compose.yaml
+        ;;
+      "letsencrypt")
+        mustache ${dir}/params_in.yaml /work/templates/instance/compose_letsencrypt.yaml > ${dir}/compose.yaml
+        ;;
+      *)
+        echo unknown certification method ${SSL_CERT_TYPE}
+        exit 1
+        ;;
+    esac
   else
     mustache ${dir}/params_in.yaml /work/templates/instance/compose_nossl.yaml > ${dir}/compose.yaml
   fi
@@ -96,12 +137,23 @@ done;
 
 if [ $failed -eq "0" ]; then
   create_params_for_traefik
+
   if [ ${HAS_SSL} = "true" ]; then
-    mustache ${PARAM_TRAEFIK} /work/templates/traefik.yaml > ${DEST}/traefik.yaml
+    case ${SSL_CERT_TYPE} in
+      "custom")
+        mustache ${PARAM_TRAEFIK} /work/templates/traefik.yaml > ${DEST}/traefik.yaml
+        ;;
+      "letsencrypt")
+        mustache ${PARAM_TRAEFIK} /work/templates/traefik_letsencrypt.yaml > ${DEST}/traefik.yaml
+        ;;
+      *)
+        echo unknown certification method ${SSL_CERT_TYPE}
+        exit 1
+        ;;
+    esac
   else
     mustache ${PARAM_TRAEFIK} /work/templates/traefik_nossl.yaml > ${DEST}/traefik.yaml
   fi
-
   if [ ${HAS_SSL} = "true" ]; then
     if [ $OVERWRITE -eq "0" ]; then
       check_if_ssl_config_for_traefik_modified

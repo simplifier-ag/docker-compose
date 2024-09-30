@@ -1,0 +1,45 @@
+services:
+
+  traefik:
+    image: traefik:2.11.2
+    restart: always
+    container_name: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+    environment:
+      - TZ=Europe/Berlin
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --entrypoints.websecure.address=:443
+{{#exposed_debugging_ports}}
+      - --entrypoints.debugging{{.}}.address=:{{.}}
+{{/exposed_debugging_ports}}
+
+      #Should the timeouts be too short for the debugging, then they can be increased here.
+      - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
+      - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
+
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=public-network
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
+      - --accesslog
+      - --accesslog.fields.names.StartUTC=drop
+
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.email={{mail}}
+      - --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json
+    ports:
+      - ${PUBLIC_PORT_HTTP}:80
+{{#exposed_debugging_ports}}
+      - {{.}}:{{.}}
+{{/exposed_debugging_ports}}
+    networks:
+      - internal-network
+      - public-network

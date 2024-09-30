@@ -93,9 +93,13 @@ instances:
 ```
 
 - _domain_suffix_ (required): domain suffix for all simplifier instances
-- _secure_ (optional): TLS Certs
+- _secure_ (optional for custom certificates): TLS Certs
+  - _type_ (required): ```custom``` 
   - _key_ (required): PRIVATE KEY
   - _wildcard_crt_for_domain_suffix_ (required): CERTIFICATE
+- _secure_ (optional for letsencrypt): TLS Certs
+  - _type_ (required): ```letsencrypt``` 
+  - _mail_ (required): administrative email address
 - _instances_ (required): map of instance definitions
   - _instance_name_ (required): name of instance
   - _db_password_ (required): database password for the instance
@@ -107,6 +111,7 @@ instances:
   - _override_wfrt_image_name_ (optional): override workflow runtime image with custom 
   - _simplifier_labels_ (optional): list of additional labels appended to the simplifier container
   - _simplifier_version_ (required): simplifier version 
+  - _enable_metrics_ (optional): if ```true``` jmx metrics for plugins and simplifier will be available 
 
 It is possible to define default values for each instances in the ```instance_default.yaml```. 
 Currently the simplifier version is defined here. Any other values mentioned in 

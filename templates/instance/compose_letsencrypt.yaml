@@ -23,7 +23,7 @@ services:
     image: ${SIMPLIFIER_IMAGE_NAME}
     restart: always
     volumes:
-      - ${HOST_DATA_PATH_INSTANCE}/simplifier:/opt/simplifier/data
+      - ${HOST_DATA_PATH_INSTANCE}:/opt/simplifier/data
       - ${HOST_DATA_PATH_INSTANCE}/shared:/opt/simplifier/shared
     environment:
       - PLUGINLIST=${PLUGINLIST}
@@ -85,6 +85,7 @@ services:
       {{#simplifier_labels}}
       - "{{.}}"
       {{/simplifier_labels}}
+      - "traefik.http.routers.{{instance_name}}.tls.certresolver=letsencrypt"
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
       interval: 15s

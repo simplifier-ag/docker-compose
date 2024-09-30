@@ -77,10 +77,10 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
-      interval: 30s
-      retries: 50
-      start_period: 120s
-      timeout: 50s
+      interval: 15s
+      retries: 150
+      start_period: 50s
+      timeout: 400s
     depends_on:
       simplifier-mysqlinit:
         condition: service_completed_successfully
