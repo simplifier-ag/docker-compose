@@ -1,0 +1,7 @@
+domain_suffix: simplifier.io
+instances:
+  simplifier:
+    instance_name: simplifier
+    db_password: ken_sent_me
+    simplifier_subdomain: instance
+    exposed_debugging_port: 2985
