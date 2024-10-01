@@ -7,20 +7,25 @@ echo "** Simplifier docker multi-instance setup **"
 echo ""
 
 usage () {
-    echo "usage: $0 [-fh] -p parameter_file.yaml"
+    echo "usage: $0 [-fsh] -p parameter_file.yaml"
     echo "  -h                  show help text"
     echo "  -f                  force overwrite"
+    echo "  -s                  inhibit docker automatic startup"
     echo "  -p parameter_file   use <parameter_file>"
 }
 
 FORCE_OVERWRITE=0
-while getopts ":p:fh" a; do
+INHIBIT_STARTUP=0
+while getopts ":p:fsh" a; do
     case "${a}" in
         p)
             PARAMETER_FILE=$(realpath ${OPTARG})
             ;;
         f)
             FORCE_OVERWRITE=1
+            ;;
+        s)
+            INHIBIT_STARTUP=1
             ;;
         h)
             usage
@@ -53,4 +58,8 @@ else
     ${DIR}/template_engine/execute.sh -p ${PARAMETER_FILE}
 fi
 
-(cd ${DIR} && docker compose up -d --remove-orphans --pull always)
+if [ $INHIBIT_STARTUP -eq "1" ]; then
+  echo "automatic docker startup disabled"
+else
+  (cd ${DIR} && docker compose up -d --remove-orphans --pull always)
+fi

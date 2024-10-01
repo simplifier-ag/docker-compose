@@ -7,6 +7,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
+      - /var/lib/simplifier/traefik/certs:/certs
+      - /var/lib/simplifier/traefik/configuration:/configuration
     environment:
       - TZ=Europe/Berlin
     command:
@@ -37,6 +39,7 @@ services:
       - --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json
     ports:
       - ${PUBLIC_PORT_HTTP}:80
+      - ${PUBLIC_PORT_HTTPS}:443
 {{#exposed_debugging_ports}}
       - {{.}}:{{.}}
 {{/exposed_debugging_ports}}

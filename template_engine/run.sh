@@ -3,11 +3,15 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 DEST="/work/dest"
+DEST_TRAEFIK="/work/dest_traefik"
 SRC="/work/templates"
 PARAM="/work/param.yaml"
 PARAM_TRAEFIK="${DEST}/param_traefik.yaml"
-CONFIG_DIR_TRAEFIK="${DEST}/traefik_conf"
-mkdir -p ${CONFIG_DIR_TRAEFIK}
+
+CONFIG_DIR_TRAEFIK="${DEST_TRAEFIK}/configuration"
+CERTS_DIR_TRAEFIK="${DEST_TRAEFIK}/certs"
+
+mkdir -p ${CONFIG_DIR_TRAEFIK} ${CERTS_DIR_TRAEFIK}
 INSTANCES=`yq '.instances' ${PARAM}|  yq 'keys_unsorted' | jq -r '.[]'`
 HAS_SSL=$(yq 'has("secure")' ${PARAM})
 SSL_CERT_TYPE="N/A"
@@ -41,9 +45,9 @@ create_ssl_config_for_traefik () {
     yq -r .secure.wildcard_crt_for_domain_suffix ${PARAM} > ${CONFIG_DIR_TRAEFIK}/${domain_suffix}.crt
     (cd ${CONFIG_DIR_TRAEFIK} && sha256sum security.toml ${domain_suffix}.crt ${domain_suffix}.key > ${CONFIG_DIR_TRAEFIK}/fingerprints.sha256)
   fi
-  #if [ ${SSL_TYPE = "letsencrypt"} ]; then
-  ## nothing to do here at the moment
-  #fi
+  if [[ ${SSL_TYPE} == "letsencrypt" ]]; then
+    mkdir -p  ${CERTS_DIR_TRAEFIK}
+  fi
 }
 
 check_if_ssl_config_for_traefik_modified () {

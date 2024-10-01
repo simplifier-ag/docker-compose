@@ -37,6 +37,8 @@ if [ -z "${DESTINATION_DIR}" ]; then
     DESTINATION_DIR=$(realpath ${DIR}/../include)
 fi
 
+TRAEFIK_DIR=$(realpath /var/lib/simplifier/traefik)
+
 if [ ! -d "${TEMPLATE_DIR}" ]; then
     echo "missing template directory: '${TEMPLATE_DIR}'"
     exit 1
@@ -58,6 +60,7 @@ docker build -t ${template_container_name} ${DIR}
 docker run --rm \
   -v ${TEMPLATE_DIR}:/work/templates:ro \
   -v ${DESTINATION_DIR}:/work/dest:rw \
+  -v ${TRAEFIK_DIR}:/work/dest_traefik:rw \
   -v ${PARAMETER_FILE}:/work/param.yaml:ro \
   -v ${DIR}/../instance_default.yaml:/work/default.yaml:ro \
   -e OVERWRITE=${FORCE_OVERWRITE} \

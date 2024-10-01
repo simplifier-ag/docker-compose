@@ -7,7 +7,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /usr/share/zoneinfo:/usr/share/zoneinfo:ro
-      - ./traefik_conf:/configuration/
+      - /var/lib/simplifier/traefik/configuration:/configuration/
     environment:
       - TZ=Europe/Berlin
     command:
