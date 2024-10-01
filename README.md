@@ -39,6 +39,8 @@ Multi Simplifier Instance setup with corresponding MySQL and Reverse Proxy Traef
     _moustache_ template file for compose setup of a single instance
 - ```templates/instance/compose_nossl.yaml```:
     _moustache_ template file for compose setup of a single instance without TLS
+- ```templates/instance/compose_letsencrypt.yaml```:
+    _moustache_ template file for compose setup of a single instance with letsencrypt cert
 - ```templates/instance/instance.env```:
     _moustache_ template file for env file of a single instance
 - ```templates/traefik_config/security.toml```:
@@ -47,6 +49,8 @@ Multi Simplifier Instance setup with corresponding MySQL and Reverse Proxy Traef
     _moustache_ template for including all instance and a traefik instance
 - ```templates/traefik.yaml```:
     _moustache_ template for traefik instance
+- ```templates/traefik_letsencrypt.yaml```:
+    _moustache_ template for traefik instance with letsencrypt cert
 - ```templates/traefik_nossl.yaml```:
     _moustache_ template for traefik instance without TLS
 - ```apply.sh```:
