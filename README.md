@@ -1,10 +1,8 @@
 # Simplifier docker-compose template
 This repository contains a docker compose setup to run [Simplifier](https://simplifier.io)
 
-The setup files are organized in branches. Each Simplifier Major Release and Enhancemet Package (EHP) has its own branch. Currently supported are:
- * Current major Release: https://github.com/simplifier-ag/docker-compose/tree/release/8.0
- * Current enhancement package: https://github.com/simplifier-ag/docker-compose/tree/release/8.3
+The setup files are organized in branches. Each Simplifier Makers Choice (MC) and Long Term Support (LTS) has its own branch. Also, there are generic branches for Long Term Support and Makers Choice editions which always contain the most current versions of the repective editions. It is recommended to use one of these two brances. These are:
+ * Makers Choice: https://github.com/simplifier-ag/docker-compose/tree/release/MC
+ * Long Term Support: https://github.com/simplifier-ag/docker-compose/tree/release/LTS
 
- Detailed installation instructions can be found here: [Installing Simplifier on Premise](https://community.simplifier.io/doc/installation-instructions/on-premise/installing-premise-image/)
- 
  For more information about Simplifier, visit our [community pages](https://community.simplifier.io/)
