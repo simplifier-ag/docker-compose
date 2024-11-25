@@ -1,9 +1,5 @@
-# Simplifier 8 EHP 4
+# Simplifier
 
-## Changelog:
-* A new shared volume has been added to simplifier and workflow designtime to be able to exchange files directly
-
----
 
 # Simplifier docker-compose template
 Docker-Compose templates to run [Simplifier](https://simplifier.io)
