@@ -53,6 +53,9 @@ services:
       - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
 
+      # set initial password for admin account
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+
       # main simplifier database
       - DB=mysql
       - MYSQL_HOST=mysql
