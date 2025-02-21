@@ -188,9 +188,8 @@ services:
       - MODULE_HOST=${INSTANCE_PREFIX}-workflow-runtime
       - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
       - TZ=${TZ}
-      - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
-      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL}
-      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED}
+      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL} # deprecated, but required during migration
+      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED} # deprecated, but required during migration
       - ARCHIVE_TIME=${WF_ARCHIVE_TIME}
       - SIMPLIFIER_LAUNCHPAD_BASE_URL=https://${SIMPLIFIER_HOSTNAME}
     networks:
