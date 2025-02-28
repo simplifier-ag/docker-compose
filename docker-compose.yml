@@ -14,7 +14,7 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 2s
-      retries: 0
+      retries: 1
       start_period: 5s
     networks:
       - internal-network
@@ -39,7 +39,6 @@ services:
 
   simplifier:
     container_name: ${INSTANCE_PREFIX}-simplifier
-    #SSBO Debugging is only available from version 8.2
     image: simplifierag/simplifier:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
@@ -73,8 +72,6 @@ services:
       - MONITORING_DB=${DB_NAME}_monitoring
 
       # Feature toggles
-      - DYNAMIC_TAB_TITLES_ENABLED=${DYNAMIC_TAB_TITLES_ENABLED}
-      - FEATURE_SSBO_JS_DEBUGGING=${FEATURE_SSBO_JS_DEBUGGING}
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
 
       # SSBO debugging feature related settings
@@ -142,7 +139,6 @@ services:
   workflow-designtime:
     container_name: ${INSTANCE_PREFIX}-workflow-designtime
     image: simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
-    init: true
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/workflowDesigntime:/home/workflowDesigntime/data
@@ -173,7 +169,6 @@ services:
   workflow-runtime:
     container_name: ${INSTANCE_PREFIX}-workflow-runtime
     image: simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
-    init: true
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/workflowRuntime:/home/workflow-runtime/data
