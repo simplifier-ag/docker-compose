@@ -5,4 +5,4 @@ The setup files are organized in branches. Each Simplifier Makers Choice (MC) an
  * Makers Choice: https://github.com/simplifier-ag/docker-compose/tree/release/MC
  * Long Term Support: https://github.com/simplifier-ag/docker-compose/tree/release/LTS
 
- For more information about Simplifier, visit our [community pages](https://community.simplifier.io/)
+ For more information about Simplifier, visit our [MAKERS CLUB](https://community.simplifier.io/)
