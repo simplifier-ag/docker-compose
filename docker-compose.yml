@@ -16,7 +16,7 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 2s
-      retries: 0
+      retries: 1
       start_period: 5s
     networks:
       - internal-network
@@ -49,10 +49,13 @@ services:
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - PLUGINLIST=${PLUGINLIST}
-      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=512m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256m
+      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss256k
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
       - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
+
+      # set initial password for admin account
+      - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
 
       # main simplifier database
       - DB=mysql
@@ -71,9 +74,8 @@ services:
       - MONITORING_DB=${DB_NAME}_monitoring
 
       # Feature toggles
-      - DYNAMIC_TAB_TITLES_ENABLED=${DYNAMIC_TAB_TITLES_ENABLED}
-      - FEATURE_SSBO_JS_DEBUGGING=${FEATURE_SSBO_JS_DEBUGGING}
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
+      - TRACKING_BEHAVIOR=${TRACKING_BEHAVIOR}
 
       # SSBO debugging feature related settings
       - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${SIMPLIFIER_HOSTNAME}
@@ -88,7 +90,6 @@ services:
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
-      - "traefik.http.routers.http-secure.middlewares=cors_header"
 
       # Second Router
       - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
@@ -99,15 +100,6 @@ services:
       # Services
       # This is required in order to let Chrome Dev-Tools connect to Simplifier
       - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
-
-      # Middlewares
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST,DELETE,PATCH"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolallowheaders=DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,SimplifierToken,SimplifierApp,SimplifierModule,SimplifierModuleInterface,SimplifierClientBusinessObject,SimplifierClientBusinessObjectFunction,sap-cancel-on-close,sap-contextid-accept,MaxDataServiceVersion,DataServiceVersion,Content-Length,SimplifierApiKey,OData-MaxVersion,OData-Version,MIME-Version,X-CSRF-Token"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolalloworiginlist=https://${SIMPLIFIER_HOSTNAME},ionic://localhost"
-      - "traefik.http.middlewares.cors_header.headers.accesscontrolmaxage=1728000"
-      - "traefik.http.middlewares.cors_header.headers.addvaryheader=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.cors_header.headers.accessControlExposeHeaders=remainingTokenLifetime,OData-Version"
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
       interval: 15s
@@ -150,7 +142,6 @@ services:
   workflow-designtime:
     container_name: ${INSTANCE_PREFIX}-workflow-designtime
     image: simplifierag/workflow-designtime:${SIMPLIFIER_VERSION}
-    init: true
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/workflowDesigntime:/home/workflowDesigntime/data
@@ -181,7 +172,6 @@ services:
   workflow-runtime:
     container_name: ${INSTANCE_PREFIX}-workflow-runtime
     image: simplifierag/workflow-runtime:${SIMPLIFIER_VERSION}
-    init: true
     restart: always
     volumes:
       - ${HOST_DATA_PATH}/workflowRuntime:/home/workflow-runtime/data
@@ -196,9 +186,8 @@ services:
       - MODULE_HOST=${INSTANCE_PREFIX}-workflow-runtime
       - JVM_PARAMETER=-Xmx${WF_RT_JVM_HEAP_GB}g
       - TZ=${TZ}
-      - ARCHIVE_ENABLED=${WF_ARCHIVE_ENABLED}
-      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL}
-      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED}
+      - ARCHIVE_INTERVAL=${WF_ARCHIVE_INTERVAL} # deprecated, but required during migration
+      - ARCHIVE_MAX_AGE_COMPLETED=${WF_ARCHIVE_MAX_AGE_COMPLETED} # deprecated, but required during migration
       - ARCHIVE_TIME=${WF_ARCHIVE_TIME}
       - SIMPLIFIER_LAUNCHPAD_BASE_URL=https://${SIMPLIFIER_HOSTNAME}
     networks:
