@@ -10,6 +10,8 @@ services:
     command: --max_allowed_packet=1073741824 --wait_timeout=28800 --default-authentication-plugin=caching_sha2_password --log_bin_trust_function_creators=1 --expire-logs-days=7
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
       interval: 5s
