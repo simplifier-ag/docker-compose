@@ -12,3 +12,7 @@ databases:
   - ${DB_PREFIX}_wf_rt
   - ${DB_PREFIX}_wf_dt
   - ${DB_PREFIX}_monitoring
+extra-grants:
+  - privilege: SELECT
+    schema: performance_schema
+    table: user_variables_by_thread
