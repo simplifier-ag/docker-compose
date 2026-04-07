@@ -23,7 +23,7 @@ services:
 
 
   mysqlinit:
-    image: simplifierag/mysqlinit:1.2.0
+    image: simplifierag/mysqlinit:1.3.0
     container_name: mysqlinit
     volumes:
       - ./mysql:/config
@@ -49,7 +49,7 @@ services:
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - PLUGINLIST=${PLUGINLIST}
-      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss1m
+      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss1m --sun-misc-unsafe-memory-access=allow
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
       - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
