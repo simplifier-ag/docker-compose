@@ -57,6 +57,9 @@ services:
       # set initial password for admin account
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
 
+      # set AI API key for app generation
+      - AI_APP_GENERATOR_API_KEY=${AI_APP_GENERATOR_API_KEY}
+
       # main simplifier database
       - DB=mysql
       - MYSQL_HOST=mysql
