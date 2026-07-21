@@ -16,7 +16,7 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 2s
-      retries: 1
+      retries: 3
       start_period: 5s
     networks:
       - internal-network
