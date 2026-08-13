@@ -80,29 +80,11 @@ services:
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
       - TRACKING_BEHAVIOR=${TRACKING_BEHAVIOR}
 
-      # SSBO debugging feature related settings
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${SIMPLIFIER_HOSTNAME}
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_PORT=2992
-      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
-
     labels:
       - "traefik.enable=true"
-
-      # First Router
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
-
-      # Second Router
-      - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
-      - "traefik.tcp.routers.ws-debugging.tls=true"
-      - "traefik.tcp.routers.ws-debugging.service=ws-debugging"
-
-      # Services
-      # This is required in order to let Chrome Dev-Tools connect to Simplifier
-      - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
       interval: 15s
@@ -206,7 +188,7 @@ services:
 
 
   traefik:
-    image: traefik:2.11.2
+    image: traefik:v3.6.25
     restart: always
     container_name: traefik
     volumes:
@@ -221,12 +203,6 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --entrypoints.websecure.address=:443
-      - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-
-      #Should the timeouts be too short for the debugging, then they can be increased here.
-      - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
-      - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
-
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
@@ -235,7 +211,6 @@ services:
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
     ports:
-      - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:2992
       - ${PUBLIC_PORT_HTTP}:80
       - ${PUBLIC_PORT_HTTPS}:443
     networks:
@@ -243,7 +218,7 @@ services:
       - public-network
 
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     container_name: watchtower
     command: --cleanup --schedule "0 0 0 * * *" --rolling-restart
     restart: unless-stopped
