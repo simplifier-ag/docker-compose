@@ -220,7 +220,7 @@ services:
   watchtower:
     image: nickfedor/watchtower
     container_name: watchtower
-    command: --cleanup --schedule "0 0 0 * * *" --rolling-restart
+    command: --cleanup --schedule "0 0 0 * * *"
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
