@@ -14,10 +14,10 @@ Single Simplifier Instance with corresponding MySQL and Reverse Proxy Traefik
 # For an up-to-date Setup Guide, visit our Community
 
 ## Setup a new Simplifier instance
-https://community.simplifier.io/doc/installation-instructions/on-premise/installing-makers-choice/
+https://community.simplifier.io/doc/installation-instructions/on-premise/installing-premise-image/
 
-## Upgrade an existing Simplifier instance from LTS
-https://community.simplifier.io/doc/installation-instructions/upgrade/upgrade-lts-to-mc/
+## Update an existing Simplifier instance
+https://community.simplifier.io/doc/installation-instructions/upgrade/upgrade-via-docker-compose/
 
 ## Upgrade an existing Simplifier instance from former MC
 https://community.simplifier.io/doc/installation-instructions/upgrade/upgrade-mc/
