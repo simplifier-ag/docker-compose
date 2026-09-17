@@ -79,6 +79,7 @@ services:
       # Feature toggles
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
       - TRACKING_BEHAVIOR=${TRACKING_BEHAVIOR}
+      - PI_AGENT_CONTAINER_ADDRESS=ws://business-agent-broker:3000
 
     labels:
       - "traefik.enable=true"
@@ -186,6 +187,13 @@ services:
         simplifier:
           condition: service_healthy
 
+  business-agent-broker:
+    image: simplifierag/pi-agent-broker:${SIMPLIFIER_VERSION}
+    restart: always
+    networks:
+      - internal-network
+    environment:
+      - SIMPLIFIER_URL=http://simplifier:8080
 
   traefik:
     image: traefik:v3.6.25
