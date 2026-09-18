@@ -192,6 +192,7 @@ services:
     restart: always
     networks:
       - internal-network
+      - public-network
     environment:
       - SIMPLIFIER_URL=http://simplifier:8080
 
