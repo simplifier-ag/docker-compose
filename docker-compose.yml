@@ -16,7 +16,7 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 2s
-      retries: 1
+      retries: 3
       start_period: 5s
     networks:
       - internal-network
@@ -49,13 +49,16 @@ services:
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - PLUGINLIST=${PLUGINLIST}
-      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss1m
+      - JVM_PARAMETER=-Xmx${SIMPLIFIER_JVM_HEAP_GB}g -Xms2g -XX:MaxMetaspaceSize=1G -XX:+UseG1GC -XX:+UseStringDeduplication -XX:-UseGCOverheadLimit -Xss1m --sun-misc-unsafe-memory-access=allow
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
       - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
 
       # set initial password for admin account
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+
+      # set AI API key for app generation
+      - AI_APP_GENERATOR_API_KEY=${AI_APP_GENERATOR_API_KEY}
 
       # main simplifier database
       - DB=mysql
@@ -76,30 +79,13 @@ services:
       # Feature toggles
       - PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT=${PDFPLUGIN_SECURITY_ALLOW_JAVASCRIPT}
       - TRACKING_BEHAVIOR=${TRACKING_BEHAVIOR}
-
-      # SSBO debugging feature related settings
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_HOST=${SIMPLIFIER_HOSTNAME}
-      - DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-      - DEBUG_CHROME_DEV_TOOLS_PORT=2992
-      - DEBUG_CHROME_DEV_TOOLS_USE_EXTERNAL_TLS=true
+      - PI_AGENT_CONTAINER_ADDRESS=ws://business-agent-broker:3000
 
     labels:
       - "traefik.enable=true"
-
-      # First Router
       - "traefik.http.routers.http-secure.rule=Host(`${SIMPLIFIER_HOSTNAME}`)"
       - "traefik.http.routers.http-secure.entrypoints=websecure"
       - "traefik.http.routers.http-secure.tls=true"
-
-      # Second Router
-      - "traefik.tcp.routers.ws-debugging.rule=HostSNI(`*`)"
-      - "traefik.tcp.routers.ws-debugging.entrypoints=debugging"
-      - "traefik.tcp.routers.ws-debugging.tls=true"
-      - "traefik.tcp.routers.ws-debugging.service=ws-debugging"
-
-      # Services
-      # This is required in order to let Chrome Dev-Tools connect to Simplifier
-      - "traefik.tcp.services.ws-debugging.loadbalancer.server.port=${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}"
     healthcheck:
       test: wget -O /dev/null http://localhost:8080/client/2.0/version 2>&1 | grep 200 || exit 1
       interval: 15s
@@ -201,9 +187,17 @@ services:
         simplifier:
           condition: service_healthy
 
+  business-agent-broker:
+    image: simplifierag/pi-agent-broker:${SIMPLIFIER_VERSION}
+    restart: always
+    networks:
+      - internal-network
+      - public-network
+    environment:
+      - SIMPLIFIER_URL=http://simplifier:8080
 
   traefik:
-    image: traefik:2.11.2
+    image: traefik:v3.6.25
     restart: always
     container_name: traefik
     volumes:
@@ -218,12 +212,6 @@ services:
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --entrypoints.websecure.address=:443
-      - --entrypoints.debugging.address=:${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}
-
-      #Should the timeouts be too short for the debugging, then they can be increased here.
-      - --entryPoints.debugging.transport.respondingTimeouts.readTimeout=60
-      - --entryPoints.debugging.transport.respondingTimeouts.idleTimeout=180
-
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.docker.network=public-network
@@ -232,7 +220,6 @@ services:
       - --accesslog
       - --accesslog.fields.names.StartUTC=drop
     ports:
-      - ${DEBUG_CHROME_DEV_TOOLS_EXPOSED_PORT}:2992
       - ${PUBLIC_PORT_HTTP}:80
       - ${PUBLIC_PORT_HTTPS}:443
     networks:
@@ -240,9 +227,9 @@ services:
       - public-network
 
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     container_name: watchtower
-    command: --cleanup --schedule "0 0 0 * * *" --rolling-restart
+    command: --cleanup --schedule "0 0 0 * * *"
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

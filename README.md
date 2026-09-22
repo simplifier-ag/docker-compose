@@ -1,11 +1,12 @@
-# Simplifier 
+# Simplifier
 
 
 # Simplifier docker-compose template
 Docker-Compose templates to run [Simplifier](https://simplifier.io)
 
-## Docker Version
-This setup requires docker version 20.10.17
+## Requirements
+- Docker Engine with the Compose V2 CLI plugin installed
+- Any currently supported Docker Engine release satisfies this
 
 ## simplifier-standalone.yml
 Single Simplifier Instance with corresponding MySQL and Reverse Proxy Traefik
@@ -17,6 +18,9 @@ https://community.simplifier.io/doc/installation-instructions/on-premise/install
 
 ## Update an existing Simplifier instance
 https://community.simplifier.io/doc/installation-instructions/upgrade/upgrade-via-docker-compose/
+
+## Upgrade an existing Simplifier instance from former MC
+https://community.simplifier.io/doc/installation-instructions/upgrade/upgrade-mc/
 
 ## Online Courses
 https://community.simplifier.io/courses/
