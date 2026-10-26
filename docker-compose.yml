@@ -57,9 +57,6 @@ services:
       # set initial password for admin account
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
 
-      # set AI API key for app generation
-      - AI_APP_GENERATOR_API_KEY=${AI_APP_GENERATOR_API_KEY}
-
       # main simplifier database
       - DB=mysql
       - MYSQL_HOST=mysql
@@ -190,6 +187,8 @@ services:
   business-agent-broker:
     image: simplifierag/pi-agent-broker:${SIMPLIFIER_VERSION}
     restart: always
+    volumes:
+      - ${BUSINESS_AGENT_SESSIONS_PATH}:/data/sessions
     networks:
       - internal-network
       - public-network
