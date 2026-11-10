@@ -53,6 +53,7 @@ services:
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
       - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
+      - BUSINESS_AGENT_KNOWLEDGE_FILES_ROOT=/opt/simplifier/shared/knowledge
 
       # set initial password for admin account
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
@@ -189,7 +190,7 @@ services:
     restart: always
     volumes:
       - ${BUSINESS_AGENT_SESSIONS_PATH}:/data/sessions
-      - ${BUSINESS_AGENT_KNOWLEDGE_PATH}:/data/shared/knowledge
+      - ${HOST_DATA_PATH}/shared/knowledge:/data/shared/knowledge
     networks:
       - internal-network
       - public-network
