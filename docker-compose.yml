@@ -189,11 +189,13 @@ services:
     restart: always
     volumes:
       - ${BUSINESS_AGENT_SESSIONS_PATH}:/data/sessions
+      - ${BUSINESS_AGENT_KNOWLEDGE_PATH}:/data/shared/knowledge
     networks:
       - internal-network
       - public-network
     environment:
       - SIMPLIFIER_URL=http://simplifier:8080
+      - BUSINESS_AGENT_KNOWLEDGE_FILES_ROOT=/data/shared/knowledge
 
   traefik:
     image: traefik:v3.6.25
