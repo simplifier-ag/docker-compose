@@ -46,6 +46,7 @@ services:
     volumes:
       - ${HOST_DATA_PATH}/simplifier:/opt/simplifier/data
       - ${HOST_DATA_PATH}/shared:/opt/simplifier/shared
+      - ${HOST_DATA_PATH}/businessAgentBroker/knowledge:/opt/simplifier/businessAgentBroker/knowledge
     environment:
       - VIRTUAL_HOST=${SIMPLIFIER_HOSTNAME}
       - PLUGINLIST=${PLUGINLIST}
@@ -53,7 +54,7 @@ services:
       - SECOND_SEED=${INSTANCE_PREFIX}-launchpad
       - MODULE_HOST=${INSTANCE_PREFIX}-simplifier
       - SIMPLIFIER_HOST=${INSTANCE_PREFIX}-simplifier
-      - BUSINESS_AGENT_KNOWLEDGE_FILES_ROOT=/opt/simplifier/shared/knowledge
+      - BUSINESS_AGENT_KNOWLEDGE_FILES_ROOT=/opt/simplifier/businessAgentBroker/knowledge
 
       # set initial password for admin account
       - INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
@@ -189,8 +190,8 @@ services:
     image: simplifierag/pi-agent-broker:${SIMPLIFIER_VERSION}
     restart: always
     volumes:
-      - ${BUSINESS_AGENT_SESSIONS_PATH}:/data/sessions
-      - ${HOST_DATA_PATH}/shared/knowledge:/data/shared/knowledge
+      - ${HOST_DATA_PATH}/businessAgentBroker/sessions:/data/sessions
+      - ${HOST_DATA_PATH}/businessAgentBroker/knowledge:/data/shared/knowledge
     networks:
       - internal-network
       - public-network
